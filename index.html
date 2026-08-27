@@ -674,23 +674,59 @@ function cardData(id){
   if(type==='w'){const w=WORDS.find(x=>x.t===val)||{t:val,r:'',m:''};return{front:w.t,cls:'c-neutral',back:'/'+w.r+'/',sub:w.m,name:w.t,audio:w.t,mn:'',chip:'word'};}
   return{front:'?',cls:'c-neutral',back:'',sub:'',name:'',audio:'',mn:'',chip:''};
 }
-/* ---- speech ---- */
-let voices=[],thVoice=null;
+/* ---- speech ----
+   Notes on silence: a browser shows the tab sound icon as soon as an utterance is
+   accepted. If no voice can render Thai, or if the engine sits in a paused state,
+   the tab icon appears but nothing is heard. Both cases are handled below. */
+let voices=[],thaiVoices=[],thVoice=null,audioStatus='Not tested yet.',primed=false,voiceTries=0;
+function isThaiVoice(v){return /^th($|[-_])/i.test(v.lang||'')||/thai/i.test(v.name||'');}
 function loadVoices(){
-  voices=window.speechSynthesis?speechSynthesis.getVoices():[];
-  const th=voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
-  thVoice=th.find(v=>v.voiceURI===S.settings.voiceURI)||th[0]||null;
+  voices=window.speechSynthesis?(speechSynthesis.getVoices()||[]):[];
+  thaiVoices=voices.filter(isThaiVoice).sort((a,b)=>(b.localService?1:0)-(a.localService?1:0));
+  const chosen=voices.filter(v=>v.voiceURI===S.settings.voiceURI)[0];
+  thVoice=chosen||thaiVoices[0]||null;
 }
-if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
-function speak(text,btn){
-  if(!window.speechSynthesis)return;
-  speechSynthesis.cancel();
+if(window.speechSynthesis){
+  loadVoices();
+  speechSynthesis.onvoiceschanged=function(){loadVoices();if(view==='settings'||view==='home')render();};
+  setTimeout(function(){loadVoices();if(view==='settings'||view==='home')render();},600);
+  setTimeout(loadVoices,2000);
+}
+function setAudioStatus(s){audioStatus=s;const el=document.getElementById('audioStatus');if(el)el.textContent=s;}
+function speakWith(text,btn,opts){
+  opts=opts||{};
+  const ss=window.speechSynthesis;
+  if(!ss){setAudioStatus('This browser has no speech engine. Use Chrome, Edge or Safari.');return;}
+  if(!voices.length)loadVoices();
+  try{ss.cancel();ss.resume();}catch(e){}
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='th-TH';u.rate=S.settings.rate||0.75;u.pitch=1;
-  if(thVoice)u.voice=thVoice;
-  if(btn){btn.classList.add('speaking');u.onend=u.onerror=()=>btn.classList.remove('speaking');}
-  speechSynthesis.speak(u);
+  u.volume=1;u.pitch=1;
+  u.rate=Math.min(1.5,Math.max(0.5,opts.rate||S.settings.rate||0.9));
+  const v=(opts.voice===null)?null:(opts.voice||thVoice);
+  u.lang=opts.lang||(v&&v.lang)||'th-TH';
+  if(v)u.voice=v;
+  let started=false;
+  if(btn)btn.classList.add('speaking');
+  u.onstart=function(){started=true;setAudioStatus('Audio started with '+(v?v.name:'the default voice for '+u.lang)+'.');};
+  u.onend=function(){if(btn)btn.classList.remove('speaking');if(started)setAudioStatus('Audio finished with '+(v?v.name:'the default voice')+'.');};
+  u.onerror=function(e){if(btn)btn.classList.remove('speaking');setAudioStatus('The speech engine returned an error: '+((e&&e.error)||'unknown')+'.');};
+  setTimeout(function(){
+    try{ss.speak(u);}catch(e){setAudioStatus('The speech engine refused the request.');return;}
+    setTimeout(function(){
+      if(!started){
+        if(btn)btn.classList.remove('speaking');
+        setAudioStatus(thaiVoices.length
+          ?'No sound. The selected voice accepted the text but played nothing. Select a different voice, or set the speed to 1.0.'
+          :'No sound, and no Thai voice is installed on this device. Install one — see “Fix the audio” in Setup.');
+      }},1800);
+  },60);
 }
+function speak(text,btn){speakWith(text,btn,{});}
+/* Some browsers keep the engine locked until speech starts from a user action. */
+document.addEventListener('click',function(){
+  if(primed||!window.speechSynthesis)return;primed=true;
+  try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;speechSynthesis.speak(u);}catch(e){}
+},{once:true});
 function speakIcon(){return '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';}
 function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
@@ -791,7 +827,9 @@ function viewHome(){
         ${due?`<button class="btn" onclick="startReview()">Review only</button>`:''}
       </div></div>`;
   }
-  return `<div class="hero fadein"><div class="eyebrow">${greet}</div>
+  const noVoice=window.speechSynthesis&&voices.length&&!thaiVoices.length;
+  const warn=noVoice?`<div class="teachnote high" style="margin:0 0 18px"><b>No sound?</b>This device has no Thai voice, so the tab looks like it is playing but stays silent. Open <a href="#" onclick="go('settings');return false;">Setup → Audio check</a> for the fix.</div>`:'';
+  return `<div class="hero fadein">${warn}<div class="eyebrow">${greet}</div>
     <h1 class="title">${done?'Keep reading.':doneToday&&S.settings.gate?'Nice work today.':'Ready for today?'}</h1>
     <p class="lede">You can read ${readable} of the ${WORDS.length} words in the word bank.</p></div>
     ${stats}${card}
@@ -1137,15 +1175,17 @@ function calcUpdate(){
 /* ---------- setup ---------- */
 function viewSettings(){
   loadVoices();
-  const th=voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
-  const opts=th.length?th.map(v=>`<option value="${v.voiceURI}" ${v.voiceURI===S.settings.voiceURI?'selected':''}>${escapeHtml(v.name)}</option>`).join('')
-    :`<option>No Thai voice on this device</option>`;
+  const other=voices.filter(v=>!isThaiVoice(v));
+  const opt=v=>`<option value="${escapeHtml(v.voiceURI)}" ${v.voiceURI===S.settings.voiceURI?'selected':''}>${escapeHtml(v.name)} (${escapeHtml(v.lang||'')}${v.localService?'':', network'})</option>`;
+  const opts=`<option value="" ${S.settings.voiceURI?'':'selected'}>Automatic</option>`+
+    (thaiVoices.length?`<optgroup label="Thai voices">${thaiVoices.map(opt).join('')}</optgroup>`:'')+
+    (other.length?`<optgroup label="Other voices — they do not read Thai">${other.slice(0,40).map(opt).join('')}</optgroup>`:'');
   return `<div class="hero fadein"><div class="eyebrow">Setup</div><h1 class="title">Setup</h1></div>
   <div class="panel fadein">
     <div class="set-row"><div><b>Your name</b><div class="muted" style="font-size:14px">shown on the today screen</div></div>
       <input type="text" value="${escapeHtml(S.name||'')}" onchange="S.name=this.value;save()"></div>
-    <div class="set-row"><div><b>Thai voice</b><div class="muted" style="font-size:14px">${th.length?'select the voice for pronunciation':'install a Thai system voice to get audio'}</div></div>
-      <select onchange="S.settings.voiceURI=this.value;save();loadVoices()">${opts}</select></div>
+    <div class="set-row"><div><b>Thai voice</b><div class="muted" style="font-size:14px">${thaiVoices.length?thaiVoices.length+' Thai voice(s) found on this device':'no Thai voice on this device — see “Fix the audio” below'}</div></div>
+      <select onchange="S.settings.voiceURI=this.value;save();loadVoices();speakWith('สวัสดีครับ',null,{})">${opts}</select></div>
     <div class="set-row"><div><b>Speech speed</b><div class="muted" style="font-size:14px">slow is better while you learn</div></div>
       <input type="range" min="0.5" max="1.2" step="0.05" value="${S.settings.rate}" oninput="S.settings.rate=+this.value;save()"></div>
     <div class="set-row"><div><b>Test the audio</b><div class="muted" style="font-size:14px">สวัสดีครับ</div></div>
@@ -1154,6 +1194,29 @@ function viewSettings(){
       <select onchange="S.settings.gate=(this.value==='1');save();go('home')">
         <option value="1" ${S.settings.gate?'selected':''}>On</option>
         <option value="0" ${!S.settings.gate?'selected':''}>Off</option></select></div>
+  </div>
+  <div class="panel fadein" style="margin-top:18px">
+    <div class="eyebrow">Audio check</div>
+    <p class="muted" style="margin-top:8px;font-size:14.5px">A tab shows the sound icon as soon as the browser accepts the text. If no voice can read Thai, the icon appears but nothing is heard. Run the three tests in order.</p>
+    <div class="menu-row">
+      <button class="btn sm" onclick="speakWith('สวัสดีครับ',null,{})">1 · Thai, selected voice</button>
+      <button class="btn sm" onclick="speakWith('สวัสดีครับ',null,{voice:null})">2 · Thai, engine default</button>
+      <button class="btn sm" onclick="speakWith('Audio test. One two three.',null,{voice:null,lang:'en-US',rate:1})">3 · English</button>
+    </div>
+    <div class="teachnote gold" style="margin-top:14px"><b>Status</b><span id="audioStatus">${escapeHtml(audioStatus)}</span></div>
+    <p class="muted" style="font-size:14px;margin-top:10px">
+      Speech engine: <b>${window.speechSynthesis?'available':'not available'}</b> · voices found: <b>${voices.length}</b> · Thai voices: <b>${thaiVoices.length?thaiVoices.map(v=>escapeHtml(v.name)).join(', '):'none'}</b></p>
+    <p class="note-small">Test 3 speaks but tests 1 and 2 are silent → the device has no Thai voice. All three silent → the browser or the system output is muted. If nothing plays at all, close and reopen the tab: a paused speech engine also plays silence.</p>
+  </div>
+  <div class="panel fadein" style="margin-top:18px">
+    <div class="eyebrow">Fix the audio — install a Thai voice</div>
+    <p class="muted" style="margin-top:8px;font-size:14.5px">
+      <b>Windows</b> — Settings → Time &amp; language → Language &amp; region → Add a language → ไทย (Thai). Open Language options and install <b>Speech</b>. Restart the browser.<br><br>
+      <b>macOS</b> — System Settings → Accessibility → Spoken Content → System Voice → Manage Voices → download <b>Thai (Kanya or Narisa)</b>. Safari reads Thai after this.<br><br>
+      <b>iPhone or iPad</b> — Settings → Accessibility → Spoken Content → Voices → Thai. Use Safari.<br><br>
+      <b>Android</b> — Settings → Accessibility (or System) → Text-to-speech output → Google Speech Services → Install voice data → Thai. Use Chrome.<br><br>
+      <b>Linux</b> — most desktops ship no Thai voice, and Chrome on Linux is often silent for Thai. Use a phone or a Windows or macOS machine for the audio.</p>
+    <p class="note-small">Firefox has weak speech support on desktop. Chrome, Edge and Safari are the reliable choices.</p>
   </div>
   <div class="panel fadein" style="margin-top:18px">
     <div class="set-row"><div><b>Jump to a day</b><div class="muted" style="font-size:14px">now on day ${Math.min(S.dayIdx+1,DAYS.length)} of ${DAYS.length}</div></div>
