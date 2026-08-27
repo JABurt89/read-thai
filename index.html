@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>อ่านไทย · Read Thai — daily script trainer</title>
+<title>อ่านไทย · Read Thai — one letter a day</title>
+<meta name="description" content="Learn to read Thai. One new letter each day, with audio, spaced review and tone rules.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,900;1,9..144,500&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -16,7 +17,7 @@
   --shadow:0 1px 0 #fff8 inset, 0 18px 40px -22px rgba(60,40,10,.5);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-button,.cell,.nav button,.rate,.audio-btn,.seg button{touch-action:manipulation}
+button,.cell,.nav button,.rate,.audio-btn,.seg button,.dayrow{touch-action:manipulation}
 button{-webkit-user-select:none;user-select:none}
 html,body{height:100%}
 body{
@@ -31,8 +32,6 @@ body{
 body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.04;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
 .wrap{position:relative;z-index:1;max-width:760px;margin:0 auto;padding:22px 18px calc(124px + env(safe-area-inset-bottom))}
-.thai{font-family:'Sarabun',sans-serif}
-.serif{font-family:'Fraunces',serif}
 .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:26px}
 .brand{display:flex;align-items:baseline;gap:10px;cursor:pointer}
 .brand .logo{font-family:'Fraunces',serif;font-weight:900;font-size:30px;letter-spacing:-.02em}
@@ -43,6 +42,7 @@ body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opa
 .streak .flame{font-size:17px;filter:saturate(1.2)}
 .streak.zero{opacity:.55}
 button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;font-size:16px}
+button:focus-visible,.cell:focus-visible,select:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-weight:600;
   border-radius:14px;padding:15px 22px;transition:.16s transform,.16s box-shadow,.16s background;
   border:1px solid var(--line);background:var(--card);box-shadow:var(--shadow)}
@@ -60,8 +60,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;color:inhe
 .audio-btn svg{width:24px;height:24px;fill:var(--gold-deep)}
 .audio-btn.speaking{animation:pulse .9s ease-in-out infinite;border-color:var(--gold)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(189,138,44,.35)}50%{box-shadow:0 0 0 9px rgba(189,138,44,0)}}
-.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;
-  box-shadow:var(--shadow)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:24px;box-shadow:var(--shadow)}
 .eyebrow{font-size:12.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink-soft);font-weight:600}
 h1.title{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,7vw,46px);line-height:1.02;
   letter-spacing:-.02em;margin:6px 0 4px}
@@ -79,9 +78,9 @@ h1.title{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,7vw,4
 .todaycard .row{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .daybadge{font-family:'Fraunces',serif;font-weight:900;font-size:15px;color:var(--gold-deep);
   border:1.5px solid var(--gold);border-radius:10px;padding:6px 12px;letter-spacing:.02em}
-.preview-glyphs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.pg{font-size:30px;font-weight:600;width:50px;height:50px;display:grid;place-items:center;border-radius:12px;
-  background:#fff7ea;border:1px solid var(--line);border-bottom:3px solid var(--cc,var(--neutral))}
+.todayglyph{display:flex;align-items:center;gap:18px;margin:16px 0 6px}
+.todayglyph .g{font-size:76px;line-height:1;font-weight:500;padding:6px 20px 10px;border-bottom:5px solid var(--cc,var(--neutral));background:#fff7ea;border-radius:8px}
+.todayglyph .g.small{font-size:44px}
 .menu-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .lesson-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
 .lesson-head .back{font-weight:600;color:var(--ink-soft)}
@@ -95,27 +94,31 @@ h1.title{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,7vw,4
   background:var(--card);border:1px solid var(--line);border-radius:24px;box-shadow:var(--shadow);
   display:flex;flex-direction:column;align-items:center;justify-content:center;padding:26px;text-align:center}
 .face.back{transform:rotateY(180deg)}
-.bigglyph{font-size:clamp(88px,26vw,150px);font-weight:500;line-height:1;letter-spacing:.02em}
+.bigglyph{font-size:clamp(80px,24vw,140px);font-weight:500;line-height:1.15;letter-spacing:.02em}
 .glyph-frame{border-bottom:5px solid var(--cc,var(--neutral));padding:0 24px 10px;border-radius:4px}
 .tap-hint{position:absolute;bottom:16px;left:0;right:0;font-size:13px;color:var(--ink-soft);opacity:.8}
-.roman{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(30px,8vw,46px);font-weight:500;line-height:1.05}
+.roman{font-family:'Fraunces',serif;font-style:italic;font-size:clamp(28px,7.5vw,44px);font-weight:500;line-height:1.05}
 .meaning{font-size:20px;color:var(--ink);margin-top:6px}
 .subline{color:var(--ink-soft);margin-top:12px;font-size:15px}
-.mnemonic{margin-top:14px;background:#fff7ea;border:1px dashed var(--gold);border-radius:14px;padding:12px 16px;max-width:46ch;font-size:15.5px}
+.mnemonic{margin-top:14px;background:#fff7ea;border:1px dashed var(--gold);border-radius:14px;padding:12px 16px;max-width:46ch;font-size:15.5px;text-align:left}
 .mnemonic b{color:var(--gold-deep)}
 .tonepill{display:inline-block;margin-top:10px;font-weight:700;font-size:14px;padding:4px 12px;border-radius:999px;background:var(--paper-2);border:1px solid var(--line)}
+.why{margin-top:10px;font-size:14px;color:var(--ink-soft);max-width:44ch}
 .rate-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
 .rate{flex-direction:column;gap:2px;padding:13px 6px;border-radius:14px;font-weight:700}
 .rate small{font-weight:500;font-size:11.5px;color:var(--ink-soft)}
 .rate.again{color:var(--bad)} .rate.good{color:var(--good)}
-.reveal-row{display:flex;gap:12px;align-items:center;justify-content:center}
 .teachnote{background:#f1f6f1;border:1px solid #cfe0cf;border-left:5px solid var(--mid);border-radius:14px;
-  padding:16px 18px;margin:6px 0 4px;font-size:15.5px}
+  padding:16px 18px;margin:6px 0 4px;font-size:15.5px;text-align:left}
 .teachnote.high{background:#fbeee9;border-color:#e7c6ba;border-left-color:var(--high)}
 .teachnote.low{background:#ecf0f7;border-color:#c3cfe2;border-left-color:var(--low)}
+.teachnote.gold{background:#fff7ea;border-color:#e8d3a6;border-left-color:var(--gold)}
 .teachnote b{display:block;margin-bottom:4px;letter-spacing:.02em}
+.exrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;justify-content:center}
+.ex{background:#fff7ea;border:1px solid var(--line);border-radius:12px;padding:8px 12px;text-align:center;cursor:pointer}
+.ex .t{font-size:26px;font-weight:600;line-height:1.2}
+.ex .r{font-family:'Fraunces',serif;font-style:italic;font-size:13px;color:var(--ink-soft)}
 .done{text-align:center;padding:18px 6px}
-.done .seal{font-size:64px}
 .confetti{font-size:40px;letter-spacing:6px;animation:rise 1.2s ease both}
 @keyframes rise{from{opacity:0;transform:translateY(14px) scale(.8)}to{opacity:1;transform:none}}
 .legend{display:flex;gap:16px;flex-wrap:wrap;margin:14px 0 18px;font-size:14px;font-weight:600}
@@ -126,7 +129,7 @@ h1.title{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,7vw,4
 .cell{background:var(--card);border:1px solid var(--line);border-bottom:3px solid var(--cc,var(--neutral));
   border-radius:13px;padding:11px 6px 9px;text-align:center;cursor:pointer;transition:.13s;position:relative}
 .cell:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
-.cell .g{font-size:34px;font-weight:600;line-height:1}
+.cell .g{font-size:34px;font-weight:600;line-height:1.25}
 .cell .r{font-size:12.5px;color:var(--ink-soft);margin-top:3px;font-family:'Fraunces',serif;font-style:italic}
 .cell.locked{opacity:.34;filter:grayscale(.5)}
 .cell.learned::after{content:"";position:absolute;top:7px;right:7px;width:7px;height:7px;border-radius:50%;background:var(--gold)}
@@ -148,16 +151,27 @@ h1.title{font-family:'Fraunces',serif;font-weight:900;font-size:clamp(30px,7vw,4
 select,input[type=text]{font-family:inherit;font-size:15px;padding:10px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink);max-width:240px}
 input[type=range]{accent-color:var(--gold)}
 .danger{color:var(--bad);border-color:#e3b5aa}
+.daylist{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.dayrow{display:flex;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);
+  border-radius:12px;padding:9px 12px;font-size:14.5px}
+.dayrow .n{font-family:'Fraunces',serif;font-weight:900;color:var(--ink-soft);min-width:34px;font-size:13px}
+.dayrow .g{font-size:26px;font-weight:600;min-width:44px;text-align:center;line-height:1.3}
+.dayrow .lbl{flex:1;color:var(--ink-soft)}
+.dayrow.done{border-color:var(--gold);background:#fff7ea}
+.dayrow.now{border-color:var(--ink);box-shadow:var(--shadow)}
+.dayrow.future{opacity:.5}
+.phasehead{font-family:'Fraunces',serif;font-weight:600;font-size:19px;margin:22px 0 2px}
 .nav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;justify-content:center;
   background:linear-gradient(0deg,var(--paper) 60%,transparent);padding:12px 14px calc(16px + env(safe-area-inset-bottom))}
 .nav-inner{display:flex;gap:4px;background:var(--card);border:1px solid var(--line);border-radius:18px;
   padding:6px;box-shadow:0 14px 34px -16px rgba(60,40,10,.5)}
-.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 16px;border-radius:13px;
-  font-size:11.5px;font-weight:600;color:var(--ink-soft);min-width:66px;transition:.14s}
+.nav button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 14px;border-radius:13px;
+  font-size:11.5px;font-weight:600;color:var(--ink-soft);min-width:62px;transition:.14s}
 .nav button .ic{font-size:19px}
 .nav button.on{background:var(--paper-2);color:var(--ink)}
 .fadein{animation:fade .4s ease both}
 @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 .center{text-align:center}
 .muted{color:var(--ink-soft)}
 .hidden{display:none!important}
@@ -171,7 +185,7 @@ a{color:var(--gold-deep)}
   .rate small{font-size:10.5px}
   .face{padding:20px}
   .glyph-frame{padding:0 12px 8px}
-  .nav button{min-width:0;flex:1;padding:9px 4px}
+  .nav button{min-width:0;flex:1;padding:9px 3px}
   .nav-inner{width:100%}
   .stat .n{font-size:26px}
   .panel{padding:18px}
@@ -191,671 +205,996 @@ a{color:var(--gold-deep)}
 </div>
 <div class="nav">
   <div class="nav-inner">
-    <button data-nav="home" onclick="go('home')"><span class="ic">📖</span>Learn</button>
-    <button data-nav="browse" onclick="go('browse')"><span class="ic">🔤</span>Alphabet</button>
+    <button data-nav="home" onclick="go('home')"><span class="ic">📖</span>Today</button>
+    <button data-nav="course" onclick="go('course')"><span class="ic">🗓️</span>Course</button>
+    <button data-nav="browse" onclick="go('browse')"><span class="ic">🔤</span>Letters</button>
     <button data-nav="tones" onclick="go('tones')"><span class="ic">🎵</span>Tones</button>
-    <button data-nav="settings" onclick="go('settings')"><span class="ic">⚙️</span>Settings</button>
+    <button data-nav="settings" onclick="go('settings')"><span class="ic">⚙️</span>Setup</button>
   </div>
 </div>
 <script>
+/* ============================================================
+   READ THAI — one new letter a day
+   Data: 44 consonants, the vowel set, the tone marks, the rules.
+   ============================================================ */
+const CLASS={mid:'c-mid',high:'c-high',low:'c-low'};
+const CLASS_NAME={mid:'Middle class',high:'High class',low:'Low class'};
 
-/* =========================================================================
-   DATA
-   ========================================================================= */
-const CLASS = {mid:'c-mid', high:'c-high', low:'c-low'};
-const CLASS_NAME = {mid:'Middle class', high:'High class', low:'Low class'};
-const CONS = {
- 'ก':{r:'g', cls:'mid', name:'กอ ไก่', nr:'gɔɔ gài — chicken', mn:'<b>ก</b> looks like a chicken (<b>gài</b>) pecking, beak to the left.'},
- 'ข':{r:'kh', cls:'high', name:'ขอ ไข่', nr:'khɔɔ khài — egg', mn:'A notch on top like a cracked <b>egg</b>.'},
- 'ฃ':{r:'kh', cls:'high', name:'ขอ ขวด', nr:'khɔɔ khùat — bottle', rare:true},
- 'ค':{r:'kh', cls:'low', name:'คอ ควาย', nr:'khɔɔ khwaai — buffalo', mn:'Two horns of a water <b>buffalo</b>.'},
- 'ฅ':{r:'kh', cls:'low', name:'คอ คน', nr:'khɔɔ khon — person', rare:true},
- 'ฆ':{r:'kh', cls:'low', name:'ฆอ ระฆัง', nr:'khɔɔ rá-khang — bell', rare:true},
- 'ง':{r:'ng', cls:'low', name:'งอ งู', nr:'ngɔɔ nguu — snake', mn:'A coiled <b>snake</b> with its tail up.'},
- 'จ':{r:'j', cls:'mid', name:'จอ จาน', nr:'jɔɔ jaan — plate', mn:'A <b>plate</b> with a little foot.'},
- 'ฉ':{r:'ch', cls:'high', name:'ฉอ ฉิ่ง', nr:'chɔɔ chìng — cymbals'},
- 'ช':{r:'ch', cls:'low', name:'ชอ ช้าง', nr:'chɔɔ cháang — elephant', mn:'An <b>elephant</b>’s trunk curling up.'},
- 'ซ':{r:'s', cls:'low', name:'ซอ โซ่', nr:'sɔɔ sôo — chain'},
- 'ฌ':{r:'ch', cls:'low', name:'ฌอ เฌอ', nr:'chɔɔ chəə — tree', rare:true},
- 'ญ':{r:'y', cls:'low', name:'ญอ หญิง', nr:'yɔɔ yǐng — woman', rare:true},
- 'ฎ':{r:'d', cls:'mid', name:'ฎอ ชฎา', nr:'dɔɔ chá-daa — headdress', rare:true},
- 'ฏ':{r:'dt', cls:'mid', name:'ฏอ ปฏัก', nr:'dtɔɔ bpà-dtàk — goad', rare:true},
- 'ฐ':{r:'th', cls:'high', name:'ฐอ ฐาน', nr:'thɔɔ thǎan — pedestal', rare:true},
- 'ฑ':{r:'th', cls:'low', name:'ฑอ มณโฑ', nr:'thɔɔ mon-thoo — Montho', rare:true},
- 'ฒ':{r:'th', cls:'low', name:'ฒอ ผู้เฒ่า', nr:'thɔɔ phûu-thâo — elder', rare:true},
- 'ณ':{r:'n', cls:'low', name:'ณอ เณร', nr:'nɔɔ neen — novice monk', rare:true},
- 'ด':{r:'d', cls:'mid', name:'ดอ เด็ก', nr:'dɔɔ dèk — child', mn:'<b>ด</b> & <b>ต</b> are twins — ด has a round belly.'},
- 'ต':{r:'dt', cls:'mid', name:'ตอ เต่า', nr:'dtɔɔ dtào — turtle', mn:'A <b>turtle</b> poking out a sharp head.'},
- 'ถ':{r:'th', cls:'high', name:'ถอ ถุง', nr:'thɔɔ thǔng — sack'},
- 'ท':{r:'th', cls:'low', name:'ทอ ทหาร', nr:'thɔɔ thá-hǎan — soldier'},
- 'ธ':{r:'th', cls:'low', name:'ธอ ธง', nr:'thɔɔ thong — flag', rare:true},
- 'น':{r:'n', cls:'low', name:'นอ หนู', nr:'nɔɔ nǔu — mouse', mn:'A little <b>mouse</b> sitting up.'},
- 'บ':{r:'b', cls:'mid', name:'บอ ใบไม้', nr:'bɔɔ bai-máai — leaf', mn:'<b>บ</b> has a flat bottom — opening up like a <b>leaf</b>.'},
- 'ป':{r:'bp', cls:'mid', name:'ปอ ปลา', nr:'bpɔɔ bplaa — fish', mn:'<b>ป</b> = ป like บ but with a tall fin — a <b>fish</b>. Sound is a hard p (bp).'},
- 'ผ':{r:'ph', cls:'high', name:'ผอ ผึ้ง', nr:'phɔɔ phʉ̂ng — bee'},
- 'ฝ':{r:'f', cls:'high', name:'ฝอ ฝา', nr:'fɔɔ fǎa — lid'},
- 'พ':{r:'ph', cls:'low', name:'พอ พาน', nr:'phɔɔ phaan — offering tray'},
- 'ฟ':{r:'f', cls:'low', name:'ฟอ ฟัน', nr:'fɔɔ fan — teeth'},
- 'ภ':{r:'ph', cls:'low', name:'ภอ สำเภา', nr:'phɔɔ sǎm-phao — junk ship', rare:true},
- 'ม':{r:'m', cls:'low', name:'มอ ม้า', nr:'mɔɔ máa — horse', mn:'A <b>horse</b> with a looped mane.'},
- 'ย':{r:'y', cls:'low', name:'ยอ ยักษ์', nr:'yɔɔ yák — giant'},
- 'ร':{r:'r', cls:'low', name:'รอ เรือ', nr:'rɔɔ rʉa — boat', mn:'Rolled/trilled <b>r</b>. A <b>boat</b> with a sail.'},
- 'ล':{r:'l', cls:'low', name:'ลอ ลิง', nr:'lɔɔ ling — monkey'},
- 'ว':{r:'w', cls:'low', name:'วอ แหวน', nr:'wɔɔ wǎen — ring'},
- 'ศ':{r:'s', cls:'high', name:'ศอ ศาลา', nr:'sɔɔ sǎa-laa — pavilion', rare:true},
- 'ษ':{r:'s', cls:'high', name:'ษอ ฤๅษี', nr:'sɔɔ rʉʉ-sǐi — hermit', rare:true},
- 'ส':{r:'s', cls:'high', name:'สอ เสือ', nr:'sɔɔ sʉ̌a — tiger', mn:'A <b>tiger</b> ready to pounce.'},
- 'ห':{r:'h', cls:'high', name:'หอ หีบ', nr:'hɔɔ hìip — chest', mn:'Also a silent “tone-lifter” when placed before sonorants.'},
- 'ฬ':{r:'l', cls:'low', name:'ฬอ จุฬา', nr:'lɔɔ jù-laa — kite', rare:true},
- 'อ':{r:'(–)', cls:'mid', name:'ออ อ่าง', nr:'ɔɔ àang — basin', mn:'A silent carrier. Also the vowel “or”. A water <b>basin</b>.'},
- 'ฮ':{r:'h', cls:'low', name:'ฮอ นกฮูก', nr:'hɔɔ nók-hûuk — owl'}
+/* f = sound when the letter is a final. '' = not used as a final. */
+const CONS={
+ 'ก':{r:'g', f:'k', cls:'mid', name:'กอ ไก่', nr:'gɔɔ gài — chicken', mn:'A chicken (<b>gài</b>) with its beak to the left.'},
+ 'ข':{r:'kh',f:'k', cls:'high',name:'ขอ ไข่', nr:'khɔɔ khài — egg', mn:'The loop on top is the <b>egg</b> in the nest.'},
+ 'ฃ':{r:'kh',f:'k', cls:'high',name:'ขอ ขวด', nr:'khɔɔ khùat — bottle', rare:true, mn:'Obsolete. ข replaced it. Learn to recognise it only.'},
+ 'ค':{r:'kh',f:'k', cls:'low', name:'คอ ควาย', nr:'khɔɔ khwaai — buffalo', mn:'Two horns of a water <b>buffalo</b>. Same sound as ข, different class.'},
+ 'ฅ':{r:'kh',f:'k', cls:'low', name:'คอ คน', nr:'khɔɔ khon — person', rare:true, mn:'Obsolete. ค replaced it.'},
+ 'ฆ':{r:'kh',f:'k', cls:'low', name:'ฆอ ระฆัง', nr:'khɔɔ rá-khang — bell', rare:true, mn:'Rare. It looks like ฅ with a tail.'},
+ 'ง':{r:'ng',f:'ng',cls:'low', name:'งอ งู', nr:'ngɔɔ nguu — snake', mn:'A <b>snake</b> with its tail up. The sound is the ng in “singer”.'},
+ 'จ':{r:'j', f:'t', cls:'mid', name:'จอ จาน', nr:'jɔɔ jaan — plate', mn:'A <b>plate</b> on a small foot.'},
+ 'ฉ':{r:'ch',f:'',  cls:'high',name:'ฉอ ฉิ่ง', nr:'chɔɔ chìng — cymbals', mn:'Two hands and a pair of small <b>cymbals</b>.'},
+ 'ช':{r:'ch',f:'t', cls:'low', name:'ชอ ช้าง', nr:'chɔɔ cháang — elephant', mn:'An <b>elephant</b> trunk curling up.'},
+ 'ซ':{r:'s', f:'t', cls:'low', name:'ซอ โซ่', nr:'sɔɔ sôo — chain', mn:'ช with a tail. It hisses like a <b>chain</b>.'},
+ 'ฌ':{r:'ch',f:'',  cls:'low', name:'ฌอ เฌอ', nr:'chɔɔ chəə — tree', rare:true, mn:'Rare. Mostly in old names.'},
+ 'ญ':{r:'y', f:'n', cls:'low', name:'ญอ หญิง', nr:'yɔɔ yǐng — woman', mn:'A <b>woman</b> with a long skirt below the line.'},
+ 'ฎ':{r:'d', f:'t', cls:'mid', name:'ฎอ ชฎา', nr:'dɔɔ chá-daa — headdress', rare:true, mn:'ด with a tail. Same sound as ด.'},
+ 'ฏ':{r:'dt',f:'t', cls:'mid', name:'ฏอ ปฏัก', nr:'dtɔɔ bpà-dtàk — goad', rare:true, mn:'ต with a tail. Same sound as ต.'},
+ 'ฐ':{r:'th',f:'t', cls:'high',name:'ฐอ ฐาน', nr:'thɔɔ thǎan — pedestal', mn:'A wide <b>pedestal</b> with feet.'},
+ 'ฑ':{r:'th',f:'t', cls:'low', name:'ฑอ มณโฑ', nr:'thɔɔ mon-thoo — Montho', rare:true, mn:'Rare. Mostly in words from Pali.'},
+ 'ฒ':{r:'th',f:'t', cls:'low', name:'ฒอ ผู้เฒ่า', nr:'thɔɔ phûu-thâo — elder', rare:true, mn:'Rare. An <b>elder</b> with a bent back.'},
+ 'ณ':{r:'n', f:'n', cls:'low', name:'ณอ เณร', nr:'nɔɔ neen — novice monk', mn:'Formal twin of น. Common in คุณ.'},
+ 'ด':{r:'d', f:'t', cls:'mid', name:'ดอ เด็ก', nr:'dɔɔ dèk — child', mn:'ด and ต are twins. <b>ด</b> has the round belly.'},
+ 'ต':{r:'dt',f:'t', cls:'mid', name:'ตอ เต่า', nr:'dtɔɔ dtào — turtle', mn:'A <b>turtle</b> with a sharp head out front.'},
+ 'ถ':{r:'th',f:'t', cls:'high',name:'ถอ ถุง', nr:'thɔɔ thǔng — sack', mn:'A <b>sack</b> with a flat base.'},
+ 'ท':{r:'th',f:'t', cls:'low', name:'ทอ ทหาร', nr:'thɔɔ thá-hǎan — soldier', mn:'Same sound as ถ, but low class.'},
+ 'ธ':{r:'th',f:'t', cls:'low', name:'ธอ ธง', nr:'thɔɔ thong — flag', mn:'A <b>flag</b> on a pole.'},
+ 'น':{r:'n', f:'n', cls:'low', name:'นอ หนู', nr:'nɔɔ nǔu — mouse', mn:'A <b>mouse</b> sitting up.'},
+ 'บ':{r:'b', f:'p', cls:'mid', name:'บอ ใบไม้', nr:'bɔɔ bai-máai — leaf', mn:'A flat bottom that opens up like a <b>leaf</b>.'},
+ 'ป':{r:'bp',f:'p', cls:'mid', name:'ปอ ปลา', nr:'bpɔɔ bplaa — fish', mn:'บ with a tall fin. A <b>fish</b>. The sound is a hard p.'},
+ 'ผ':{r:'ph',f:'',  cls:'high',name:'ผอ ผึ้ง', nr:'phɔɔ phʉ̂ng — bee', mn:'A <b>bee</b> box with a tall lid.'},
+ 'ฝ':{r:'f', f:'',  cls:'high',name:'ฝอ ฝา', nr:'fɔɔ fǎa — lid', mn:'ผ with a small flag. A <b>lid</b>.'},
+ 'พ':{r:'ph',f:'p', cls:'low', name:'พอ พาน', nr:'phɔɔ phaan — offering tray', mn:'Same sound as ผ, but low class.'},
+ 'ฟ':{r:'f', f:'p', cls:'low', name:'ฟอ ฟัน', nr:'fɔɔ fan — teeth', mn:'พ with a flag. <b>Teeth</b>.'},
+ 'ภ':{r:'ph',f:'p', cls:'low', name:'ภอ สำเภา', nr:'phɔɔ sǎm-phao — junk ship', mn:'A <b>ship</b> with a sail. Same sound as พ.'},
+ 'ม':{r:'m', f:'m', cls:'low', name:'มอ ม้า', nr:'mɔɔ máa — horse', mn:'A <b>horse</b> with a looped mane.'},
+ 'ย':{r:'y', f:'y', cls:'low', name:'ยอ ยักษ์', nr:'yɔɔ yák — giant', mn:'A <b>giant</b> with a big foot.'},
+ 'ร':{r:'r', f:'n', cls:'low', name:'รอ เรือ', nr:'rɔɔ rʉa — boat', mn:'A <b>boat</b> with a sail. Rolled r. As a final it sounds like n.'},
+ 'ล':{r:'l', f:'n', cls:'low', name:'ลอ ลิง', nr:'lɔɔ ling — monkey', mn:'A <b>monkey</b> tail. As a final it sounds like n.'},
+ 'ว':{r:'w', f:'w', cls:'low', name:'วอ แหวน', nr:'wɔɔ wǎen — ring', mn:'A <b>ring</b> with one loop.'},
+ 'ศ':{r:'s', f:'t', cls:'high',name:'ศอ ศาลา', nr:'sɔɔ sǎa-laa — pavilion', mn:'One of three “s” letters. Used in words from Sanskrit.'},
+ 'ษ':{r:'s', f:'t', cls:'high',name:'ษอ ฤๅษี', nr:'sɔɔ rʉʉ-sǐi — hermit', mn:'One of three “s” letters. It appears in ภาษา (language).'},
+ 'ส':{r:'s', f:'t', cls:'high',name:'สอ เสือ', nr:'sɔɔ sʉ̌a — tiger', mn:'A <b>tiger</b> ready to jump. The common “s”.'},
+ 'ห':{r:'h', f:'',  cls:'high',name:'หอ หีบ', nr:'hɔɔ hìip — chest', mn:'A <b>chest</b> with a lid. Later it also works as a silent tone lifter.'},
+ 'ฬ':{r:'l', f:'n', cls:'low', name:'ฬอ จุฬา', nr:'lɔɔ jù-laa — kite', rare:true, mn:'Rare formal twin of ล.'},
+ 'อ':{r:'', f:'',  cls:'mid', name:'ออ อ่าง', nr:'ɔɔ àang — basin', mn:'A silent carrier. It holds a vowel that cannot stand alone. It is also the vowel “ɔɔ”.'},
+ 'ฮ':{r:'h', f:'',  cls:'low', name:'ฮอ นกฮูก', nr:'hɔɔ nók-hûuk — owl', mn:'Low-class twin of ห. Rare.'}
 };
-const DOT='◌';
-const VOW = {
- 'a-':{p:'◌ะ', sound:'a', len:'short', name:'sàrà a', ex:'อะ'},
- 'aa':{p:'◌า', sound:'aa', len:'long', name:'sàrà aa', ex:'อา'},
- 'i-':{p:'◌ิ', sound:'i', len:'short', name:'sàrà i', ex:'อิ'},
- 'ii':{p:'◌ี', sound:'ii', len:'long', name:'sàrà ii', ex:'อี'},
- 'ue-':{p:'◌ึ', sound:'ʉ', len:'short', name:'sàrà ʉ', ex:'อึ'},
- 'uue':{p:'◌ื', sound:'ʉʉ', len:'long', name:'sàrà ʉʉ', ex:'อือ'},
- 'u-':{p:'◌ุ', sound:'u', len:'short', name:'sàrà u', ex:'อุ'},
- 'uu':{p:'◌ู', sound:'uu', len:'long', name:'sàrà uu', ex:'อู'},
- 'e-':{p:'เ◌ะ', sound:'e', len:'short', name:'sàrà e', ex:'เอะ'},
- 'ee':{p:'เ◌', sound:'ee', len:'long', name:'sàrà ee', ex:'เอ'},
- 'ae-':{p:'แ◌ะ', sound:'ae', len:'short', name:'sàrà ae', ex:'แอะ'},
- 'aae':{p:'แ◌', sound:'aae', len:'long', name:'sàrà aae', ex:'แอ'},
- 'o-':{p:'โ◌ะ', sound:'o', len:'short', name:'sàrà o', ex:'โอะ'},
- 'oo':{p:'โ◌', sound:'oo', len:'long', name:'sàrà oo', ex:'โอ'},
- 'or-':{p:'เ◌าะ', sound:'ɔ', len:'short', name:'sàrà ɔ', ex:'เอาะ'},
- 'oor':{p:'◌อ', sound:'ɔɔ', len:'long', name:'sàrà ɔɔ', ex:'ออ'},
- 'er':{p:'เ◌อ', sound:'əə', len:'long', name:'sàrà əə', ex:'เออ'},
- 'ai1':{p:'ใ◌', sound:'ai', len:'long', name:'sàrà ai (mái-múan)', ex:'ใอ'},
- 'ai2':{p:'ไ◌', sound:'ai', len:'long', name:'sàrà ai (mái-malai)', ex:'ไอ'},
- 'ao':{p:'เ◌า', sound:'ao', len:'long', name:'sàrà ao', ex:'เอา'},
- 'am':{p:'◌ำ', sound:'am', len:'long', name:'sàrà am', ex:'อำ'},
- 'ua':{p:'◌ัว', sound:'ua', len:'long', name:'sàrà ua', ex:'อัว'},
- 'uea':{p:'เ◌ือ', sound:'ʉa', len:'long', name:'sàrà ʉa', ex:'เอือ'},
- 'ia':{p:'เ◌ีย', sound:'ia', len:'long', name:'sàrà ia', ex:'เอีย'}
+const COMMON_FINAL=['ก','ด','บ','ง','น','ม','ย','ว','ต','ป','ล','ส','ช','ท','ค','พ','ร','ญ','ณ'];
+
+/* Vowel patterns.
+   o = template with no final consonant, f = template with a final.
+   C = the initial consonant, F = the final consonant. */
+const VOW={
+ 'aa' :{p:'◌า',  rom:'aa', long:true,  o:'Cา',   f:'CาF',   chars:['า'], name:'sàrà aa', ex:'อา'},
+ 'ii' :{p:'◌ี',  rom:'ii', long:true,  o:'Cี',   f:'CีF',   chars:['ี'], name:'sàrà ii', ex:'อี'},
+ 'uu' :{p:'◌ู',  rom:'uu', long:true,  o:'Cู',   f:'CูF',   chars:['ู'], name:'sàrà uu', ex:'อู'},
+ 'a-' :{p:'◌ะ',  rom:'a',  long:false, o:'Cะ',   f:null,    chars:['ะ'], name:'sàrà a',  ex:'อะ'},
+ 'a2' :{p:'◌ั◌', rom:'a',  long:false, o:null,   f:'CัF',   chars:['ั'], name:'mái han aa-gàat', ex:'อัน'},
+ 'i-' :{p:'◌ิ',  rom:'i',  long:false, o:'Cิ',   f:'CิF',   chars:['ิ'], name:'sàrà i',  ex:'อิ'},
+ 'u-' :{p:'◌ุ',  rom:'u',  long:false, o:'Cุ',   f:'CุF',   chars:['ุ'], name:'sàrà u',  ex:'อุ'},
+ 'ee' :{p:'เ◌',  rom:'ee', long:true,  o:'เC',   f:'เCF',   chars:['เ'], name:'sàrà ee', ex:'เอ'},
+ 'aae':{p:'แ◌',  rom:'aae',long:true,  o:'แC',   f:'แCF',   chars:['แ'], name:'sàrà ae', ex:'แอ'},
+ 'oo' :{p:'โ◌',  rom:'oo', long:true,  o:'โC',   f:'โCF',   chars:['โ'], name:'sàrà oo', ex:'โอ'},
+ 'ai2':{p:'ไ◌',  rom:'ai', long:true,  o:'ไC',   f:null,    chars:['ไ'], name:'sàrà ai (mái malai)', ex:'ไอ'},
+ 'ai1':{p:'ใ◌',  rom:'ai', long:true,  o:'ใC',   f:null,    chars:['ใ'], name:'sàrà ai (mái múan)', ex:'ใอ'},
+ 'oor':{p:'◌อ',  rom:'ɔɔ', long:true,  o:'Cอ',   f:'CอF',   chars:[],    name:'sàrà ɔɔ', ex:'ออ'},
+ 'am' :{p:'◌ำ',  rom:'am', long:true,  o:'Cำ',   f:null,    chars:['ำ'], name:'sàrà am', ex:'อำ'},
+ 'ao' :{p:'เ◌า', rom:'ao', long:true,  o:'เCา',  f:null,    chars:[],    name:'sàrà ao', ex:'เอา'},
+ 'ua' :{p:'◌ัว', rom:'ua', long:true,  o:'Cัว',  f:'CวF',   chars:[],    name:'sàrà ua', ex:'อัว'},
+ 'ia' :{p:'เ◌ีย',rom:'ia', long:true,  o:'เCีย', f:'เCียF', chars:[],    name:'sàrà ia', ex:'เอีย'},
+ 'uue':{p:'◌ือ', rom:'ʉʉ', long:true,  o:'Cือ',  f:'CืF',   chars:['ื'], name:'sàrà ʉʉ', ex:'อือ'},
+ 'ue-':{p:'◌ึ',  rom:'ʉ',  long:false, o:'Cึ',   f:'CึF',   chars:['ึ'], name:'sàrà ʉ',  ex:'อึ'},
+ 'uea':{p:'เ◌ือ',rom:'ʉa', long:true,  o:'เCือ', f:'เCือF', chars:[],    name:'sàrà ʉa', ex:'เอือ'},
+ 'er' :{p:'เ◌อ', rom:'əə', long:true,  o:'เCอ',  f:'เCิF',  chars:[],    name:'sàrà əə', ex:'เออ'},
+ 'or-':{p:'เ◌าะ',rom:'ɔ',  long:false, o:'เCาะ', f:null,    chars:[],    name:'sàrà ɔ',  ex:'เอาะ'},
+ 'e-' :{p:'เ◌ะ', rom:'e',  long:false, o:'เCะ',  f:'เC็F',  fNeed:'v:taikhu', chars:[], name:'sàrà e', ex:'เอะ'},
+ 'ae-':{p:'แ◌ะ', rom:'ae', long:false, o:'แCะ',  f:'แC็F',  fNeed:'v:taikhu', chars:[], name:'sàrà ae', ex:'แอะ'},
+ 'o-' :{p:'โ◌ะ', rom:'o',  long:false, o:'โCะ',  f:null,    chars:[],    name:'sàrà o',  ex:'โอะ'},
+ 'hid':{p:'◌◌',  rom:'o',  long:false, o:null,   f:'CF',    chars:[],    name:'hidden o', ex:'นก'},
+ 'taikhu':{p:'◌็', rom:'', long:false, o:null,   f:null,    chars:['็'], name:'mái dtài-khúu', ex:'เด็ก', sign:true},
+ 'karan' :{p:'◌์', rom:'', long:false, o:null,   f:null,    chars:['์'], name:'gaa-ran (silent mark)', ex:'สัตว์', sign:true}
 };
-function deriveTone(cls, dead, longV, mark){
-  if(mark==='ek')  return cls==='low' ? 'falling' : 'low';
-  if(mark==='tho') return cls==='low' ? 'high' : 'falling';
+
+const MARKS={
+ 'ek'  :{ch:'่', name:'ไม้เอก · mái èek',        gives:{mid:'low',high:'low',low:'falling'}},
+ 'tho' :{ch:'้', name:'ไม้โท · mái thoo',        gives:{mid:'falling',high:'falling',low:'high'}},
+ 'tri' :{ch:'๊', name:'ไม้ตรี · mái dtrii',       gives:{mid:'high',high:'—',low:'—'}},
+ 'chat':{ch:'๋', name:'ไม้จัตวา · mái jàt-dtà-waa',gives:{mid:'rising',high:'—',low:'—'}}
+};
+const TONE_LABEL={mid:'Mid',low:'Low',falling:'Falling',high:'High',rising:'Rising'};
+const TONE_HINT={mid:'flat, no movement',low:'low and flat',falling:'start high, fall',high:'high and tight',rising:'dip, then rise'};
+
+/* The rule cards. One rule day teaches one rule. */
+const RULES={
+ 'classes':{t:'Three classes of consonant',c:'mid',b:'Thai has 44 consonants. Each one belongs to a class: middle (9 letters), high (11) or low (24). The class of the FIRST consonant decides the tone of the syllable. This is why you learn the class with every letter.',ex:[]},
+ 'mid-live':{t:'Middle class + long vowel = MID tone',c:'mid',b:'A syllable that ends in a long vowel is “live”. A middle-class consonant with a live syllable and no tone mark gets the MID tone. Say it flat, with no movement.',ex:[{t:'กา',r:'gaa',m:'crow'},{t:'ดา',r:'daa',m:'(name)'}]},
+ 'carrier':{t:'อ is a silent carrier',c:'mid',b:'Some vowels cannot stand alone. อ holds them: อา, อี, อู. At the start of a word อ has no sound of its own, but it is middle class, so it still sets the tone.',ex:[{t:'อา',r:'aa',m:'aunt, uncle'},{t:'อี',r:'ii',m:'(sound)'}]},
+ 'dead-short':{t:'Short vowel with no final = DEAD syllable',c:'mid',b:'A syllable that stops on a short vowel is “dead”. A middle-class consonant with a dead syllable gets the LOW tone. Drop your pitch and stop the sound.',ex:[{t:'จะ',r:'jà',m:'will'},{t:'กะ',r:'gà',m:'to estimate'}]},
+ 'dead-finals':{t:'Final consonants that kill the sound',c:'gold',b:'A final consonant closes the syllable. ก ด บ (and every letter that sounds like k, t or p at the end) stop the sound completely, so the syllable is DEAD.<br><br>Middle class or high class + dead syllable → LOW tone. This is true even with a long vowel.',ex:[{t:'ดาบ',r:'dàap',m:'sword'},{t:'ปีก',r:'bpìik',m:'wing'},{t:'จีบ',r:'jìip',m:'to flirt'},{t:'บาป',r:'bàap',m:'sin'}]},
+ 'low-live':{t:'Low class, and the finals that keep a syllable alive',c:'low',b:'น ม ง ย ว are low class. As the first consonant of a LIVE syllable with no tone mark they give the MID tone — the same result as middle class. So มา and กา are both flat.<br><br>These five letters also close syllables, and the sound can continue through them, so the syllable stays LIVE.',ex:[{t:'นา',r:'naa',m:'rice field'},{t:'กิน',r:'gin',m:'to eat'},{t:'จาน',r:'jaan',m:'plate'}]},
+ 'low-dead':{t:'Low class + dead syllable: length decides',c:'low',b:'Low class is the only class that splits dead syllables by vowel length.<br><br>Low class + dead + SHORT vowel → HIGH tone.<br>Low class + dead + LONG vowel → FALLING tone.',ex:[{t:'มัด',r:'mát',m:'to tie'},{t:'นับ',r:'náp',m:'to count'},{t:'มาก',r:'mâak',m:'much'},{t:'ยาก',r:'yâak',m:'difficult'}]},
+ 'hidden-o':{t:'The hidden vowel “o”',c:'gold',b:'When two consonants sit together with no written vowel, a short “o” is understood between them. นก is n + (o) + k = nók. The syllable is dead, so apply the dead-syllable rule.',ex:[{t:'นก',r:'nók',m:'bird'},{t:'ตก',r:'dtòk',m:'to fall'},{t:'คน',r:'khon',m:'person'}]},
+ 'high-class':{t:'High class: RISING when live, LOW when dead',c:'high',b:'ห is your first high-class letter. With no tone mark: a live syllable gets the RISING tone (dip, then rise, like a question). A dead syllable gets the LOW tone.',ex:[{t:'หา',r:'hǎa',m:'to look for'},{t:'หู',r:'hǔu',m:'ear'}]},
+ 'low-class':{t:'Low class: the full set of rules',c:'low',b:'ค starts the large low-class group (24 letters). With no tone mark: live → MID, dead + short vowel → HIGH, dead + long vowel → FALLING. A useful pattern: many low-class letters have a high-class twin with the same sound (ค/ข, ท/ถ, พ/ผ, ฟ/ฝ, ช/ฉ, ซ/ส). Thai uses the twin to write a different tone.',ex:[{t:'คน',r:'khon',m:'person'},{t:'คิด',r:'khít',m:'to think'},{t:'พูด',r:'phûut',m:'to speak'}]},
+ 'marks-intro':{t:'Now the tone marks',c:'gold',b:'You know every letter. Four small marks sit above the initial consonant and force a tone. The mark does not give the same tone to every class — the class still decides. The next four days take one mark each.',ex:[{t:'◌่',r:'mái èek',m:'mark 1'},{t:'◌้',r:'mái thoo',m:'mark 2'},{t:'◌๊',r:'mái dtrii',m:'mark 3'},{t:'◌๋',r:'mái jàt-dtà-waa',m:'mark 4'}]},
+ 'silent-h':{t:'Silent ห in front of a sonorant',c:'high',b:'ง ญ ณ น ม ย ร ล ว are low class, so they cannot make a rising or low tone alone. Put a silent ห in front and the pair follows HIGH-class rules. หมา = ห (silent) + ม = mǎa, rising. Look for หง หญ หน หม หย หร หล หว.',ex:[{t:'หมา',r:'mǎa',m:'dog'},{t:'หนู',r:'nǔu',m:'mouse'},{t:'ใหม่',r:'mài',m:'new'}]},
+ 'o-leader':{t:'The four อย words',c:'mid',b:'อ in front of ย makes ย follow MIDDLE-class rules. Only four common words do this. Learn them as a set.',ex:[{t:'อย่า',r:'yàa',m:'do not'},{t:'อยู่',r:'yùu',m:'to be at'},{t:'อย่าง',r:'yàang',m:'kind, way'},{t:'อยาก',r:'yàak',m:'to want to'}]},
+ 'cluster':{t:'True consonant clusters',c:'gold',b:'Two consonants can share one vowel and blend: ก ข ค ป พ ต plus ร ล ว. Examples: กร กล กว ปร ปล พร พล คร คล ขว. The FIRST consonant sets the tone.',ex:[{t:'ปลา',r:'bplaa',m:'fish'},{t:'กลาง',r:'glaang',m:'middle'},{t:'ครับ',r:'khráp',m:'polite word'}]},
+ 'unwritten-a':{t:'The unwritten “a” between syllables',c:'gold',b:'If two consonants sit together but do not form a true cluster, a short “a” is understood, and the first syllable is unstressed. ตลาด = dtà-làat. The first consonant also lends its class to the second syllable.',ex:[{t:'สบาย',r:'sà-baai',m:'comfortable'},{t:'ตลาด',r:'dtà-làat',m:'market'},{t:'ขนม',r:'khà-nǒm',m:'snack'}]},
+ 'false-cluster':{t:'False clusters and silent ร',c:'gold',b:'Three patterns break the cluster rule. ทร sounds like s (ทราย = saai). ส/จ + ร drops the r sound (จริง = jing). ร after some letters is silent (สร้าง = sâang).',ex:[{t:'ทราย',r:'saai',m:'sand'},{t:'จริง',r:'jing',m:'true'}]},
+ 'yamok':{t:'ๆ repeats the word',c:'gold',b:'ๆ (mái ya-mók) means “say the word again”. เด็กๆ = dèk dèk (children). It never changes the tone.',ex:[{t:'เด็กๆ',r:'dèk dèk',m:'children'},{t:'ช้าๆ',r:'cháa cháa',m:'slowly'}]},
+ 'numerals':{t:'Thai numerals',c:'gold',b:'๐ ๑ ๒ ๓ ๔ ๕ ๖ ๗ ๘ ๙ = 0 1 2 3 4 5 6 7 8 9. Menus, temple signs and official documents still use them.',ex:[{t:'๑๐',r:'sìp',m:'10'},{t:'๒๕',r:'yîi-sìp hâa',m:'25'}]},
+ 'graduation':{t:'You can read Thai',c:'gold',b:'You know all 44 consonants, the vowel set, the four tone marks and every tone rule. From here, practice mode mixes your whole card set with real words. Read signs, menus and subtitles — that is now the fastest way forward.',ex:[{t:'สวัสดี',r:'sà-wàt-dii',m:'hello'},{t:'ขอบคุณ',r:'khɔ̀ɔp-khun',m:'thank you'}]}
+};
+
+/* ============================================================
+   THE COURSE — one item a day.
+   k:'c' consonant · k:'v' vowel or sign · k:'t' tone mark · k:'r' rule day
+   r: an extra rule card taught on the same day as the letter.
+   ============================================================ */
+const DAYS=[
+ /* Phase 1 — middle class and the long vowels */
+ {k:'c',v:'ก',r:'classes',ph:1},
+ {k:'v',v:'aa',r:'mid-live',ph:1},
+ {k:'c',v:'ด',ph:1},
+ {k:'v',v:'ii',ph:1},
+ {k:'c',v:'ต',ph:1},
+ {k:'v',v:'uu',ph:1},
+ {k:'c',v:'บ',ph:1},
+ {k:'c',v:'ป',ph:1},
+ {k:'c',v:'อ',r:'carrier',ph:1},
+ {k:'c',v:'จ',ph:1},
+ {k:'v',v:'a-',r:'dead-short',ph:1},
+ {k:'v',v:'i-',ph:1},
+ {k:'v',v:'u-',ph:1},
+ {k:'v',v:'ee',ph:1},
+ {k:'v',v:'aae',ph:1},
+ {k:'v',v:'oo',ph:1},
+ {k:'v',v:'ai2',ph:1},
+ {k:'v',v:'ai1',ph:1},
+ {k:'c',v:'ฎ',ph:1},
+ {k:'c',v:'ฏ',ph:1},
+ /* Phase 2 — final consonants and the five sonorants */
+ {k:'r',v:'dead-finals',ph:2},
+ {k:'c',v:'น',r:'low-live',ph:2},
+ {k:'v',v:'a2',ph:2},
+ {k:'c',v:'ม',ph:2},
+ {k:'c',v:'ง',ph:2},
+ {k:'c',v:'ย',ph:2},
+ {k:'c',v:'ว',ph:2},
+ {k:'r',v:'low-dead',ph:2},
+ {k:'r',v:'hidden-o',ph:2},
+ /* Phase 3 — high class and the rest of the vowels */
+ {k:'c',v:'ห',r:'high-class',ph:3},
+ {k:'c',v:'ส',ph:3},
+ {k:'v',v:'oor',ph:3},
+ {k:'c',v:'ข',ph:3},
+ {k:'c',v:'ถ',ph:3},
+ {k:'c',v:'ผ',ph:3},
+ {k:'c',v:'ฝ',ph:3},
+ {k:'c',v:'ฉ',ph:3},
+ {k:'v',v:'am',ph:3},
+ {k:'v',v:'ao',ph:3},
+ {k:'v',v:'ua',ph:3},
+ {k:'v',v:'ia',ph:3},
+ {k:'v',v:'uue',ph:3},
+ {k:'v',v:'ue-',ph:3},
+ {k:'v',v:'uea',ph:3},
+ {k:'v',v:'er',ph:3},
+ {k:'v',v:'or-',ph:3},
+ {k:'v',v:'e-',ph:3},
+ {k:'v',v:'ae-',ph:3},
+ {k:'v',v:'o-',ph:3},
+ {k:'v',v:'taikhu',ph:3},
+ {k:'c',v:'ศ',ph:3},
+ {k:'c',v:'ษ',ph:3},
+ {k:'c',v:'ฐ',ph:3},
+ {k:'c',v:'ฃ',ph:3},
+ /* Phase 4 — low class */
+ {k:'c',v:'ค',r:'low-class',ph:4},
+ {k:'c',v:'ท',ph:4},
+ {k:'c',v:'พ',ph:4},
+ {k:'c',v:'ล',ph:4},
+ {k:'c',v:'ร',ph:4},
+ {k:'c',v:'ช',ph:4},
+ {k:'c',v:'ซ',ph:4},
+ {k:'c',v:'ฟ',ph:4},
+ {k:'c',v:'ฮ',ph:4},
+ {k:'c',v:'ญ',ph:4},
+ {k:'c',v:'ณ',ph:4},
+ {k:'c',v:'ธ',ph:4},
+ {k:'c',v:'ภ',ph:4},
+ {k:'c',v:'ฬ',ph:4},
+ {k:'c',v:'ฆ',ph:4},
+ {k:'c',v:'ฌ',ph:4},
+ {k:'c',v:'ฑ',ph:4},
+ {k:'c',v:'ฒ',ph:4},
+ {k:'c',v:'ฅ',ph:4},
+ /* Phase 5 — tone marks and the last rules */
+ {k:'r',v:'marks-intro',ph:5},
+ {k:'t',v:'ek',ph:5},
+ {k:'t',v:'tho',ph:5},
+ {k:'t',v:'tri',ph:5},
+ {k:'t',v:'chat',ph:5},
+ {k:'r',v:'silent-h',ph:5},
+ {k:'r',v:'o-leader',ph:5},
+ {k:'r',v:'cluster',ph:5},
+ {k:'r',v:'unwritten-a',ph:5},
+ {k:'r',v:'false-cluster',ph:5},
+ {k:'v',v:'karan',ph:5},
+ {k:'r',v:'yamok',ph:5},
+ {k:'r',v:'numerals',ph:5},
+ {k:'r',v:'graduation',ph:5}
+];
+const PHASE={1:'Middle class · the first vowels',2:'Sonorants · final consonants',3:'High class · the full vowel set',4:'Low class',5:'Tone marks · special rules'};
+
+/* Real words. n = extra items the word needs before it can appear. */
+const WORDS=[
+ {t:'กา',r:'gaa',m:'crow'},{t:'ตา',r:'dtaa',m:'eye; grandfather'},{t:'ดี',r:'dii',m:'good'},
+ {t:'ตี',r:'dtii',m:'to hit'},{t:'ปี',r:'bpii',m:'year'},{t:'ดู',r:'duu',m:'to look'},
+ {t:'ปู',r:'bpuu',m:'crab'},{t:'อา',r:'aa',m:'aunt or uncle'},{t:'จะ',r:'jà',m:'will'},
+ {t:'ไป',r:'bpai',m:'to go'},{t:'ใจ',r:'jai',m:'heart, mind'},{t:'ใบ',r:'bai',m:'leaf'},
+ {t:'โต',r:'dtoo',m:'big; to grow'},{t:'แก',r:'gaae',m:'you (familiar)'},
+ {t:'กิน',r:'gin',m:'to eat'},{t:'ดิน',r:'din',m:'soil'},{t:'บิน',r:'bin',m:'to fly'},
+ {t:'จาน',r:'jaan',m:'plate'},{t:'กัน',r:'gan',m:'together'},{t:'วัน',r:'wan',m:'day'},
+ {t:'มา',r:'maa',m:'to come'},{t:'นา',r:'naa',m:'rice field'},{t:'งู',r:'nguu',m:'snake'},
+ {t:'งา',r:'ngaa',m:'sesame'},{t:'ยา',r:'yaa',m:'medicine'},{t:'ตาม',r:'dtaam',m:'to follow'},
+ {t:'ตาย',r:'dtaai',m:'to die'},{t:'ดาว',r:'daao',m:'star'},{t:'กาว',r:'gaao',m:'glue'},
+ {t:'ยาว',r:'yaao',m:'long'},{t:'บาง',r:'baang',m:'thin; some'},{t:'ดัง',r:'dang',m:'loud'},
+ {t:'ยัง',r:'yang',m:'still'},{t:'งาน',r:'ngaan',m:'work'},{t:'นาน',r:'naan',m:'a long time'},
+ {t:'มัน',r:'man',m:'it; oily'},{t:'อาย',r:'aai',m:'shy'},{t:'ยาม',r:'yaam',m:'guard; period'},
+ {t:'ดาบ',r:'dàap',m:'sword',n:['r:dead-finals']},{t:'บาด',r:'bàat',m:'to cut',n:['r:dead-finals']},{t:'ปีก',r:'bpìik',m:'wing',n:['r:dead-finals']},
+ {t:'จีบ',r:'jìip',m:'to flirt',n:['r:dead-finals']},{t:'ตัด',r:'dtàt',m:'to cut',n:['r:dead-finals']},{t:'มาก',r:'mâak',m:'much, very',n:['r:dead-finals','r:low-dead']},
+ {t:'ยาก',r:'yâak',m:'difficult',n:['r:dead-finals','r:low-dead']},{t:'มัด',r:'mát',m:'to tie',n:['r:dead-finals','r:low-dead']},{t:'วัด',r:'wát',m:'temple',n:['r:dead-finals','r:low-dead']},
+ {t:'นับ',r:'náp',m:'to count',n:['r:dead-finals','r:low-dead']},{t:'บาป',r:'bàap',m:'sin',n:['r:dead-finals']},{t:'ปาก',r:'bpàak',m:'mouth',n:['r:dead-finals']},
+ {t:'นก',r:'nók',m:'bird',n:['r:hidden-o','r:dead-finals','r:low-dead']},{t:'มด',r:'mót',m:'ant',n:['r:hidden-o','r:dead-finals','r:low-dead']},
+ {t:'ตก',r:'dtòk',m:'to fall',n:['r:hidden-o','r:dead-finals']},{t:'กบ',r:'gòp',m:'frog',n:['r:hidden-o','r:dead-finals']},
+ {t:'จบ',r:'jòp',m:'to finish',n:['r:hidden-o','r:dead-finals']},{t:'ยก',r:'yók',m:'to lift',n:['r:hidden-o','r:dead-finals','r:low-dead']},
+ {t:'กด',r:'gòt',m:'to press',n:['r:hidden-o','r:dead-finals']},{t:'นม',r:'nom',m:'milk',n:['r:hidden-o']},
+ {t:'จน',r:'jon',m:'poor; until',n:['r:hidden-o']},
+ {t:'หา',r:'hǎa',m:'to look for'},{t:'หู',r:'hǔu',m:'ear'},{t:'หิน',r:'hǐn',m:'stone'},
+ {t:'สาม',r:'sǎam',m:'three'},{t:'สี',r:'sǐi',m:'colour'},{t:'สิบ',r:'sìp',m:'ten',n:['r:dead-finals']},
+ {t:'สาย',r:'sǎai',m:'line; late morning'},{t:'ขา',r:'khǎa',m:'leg'},{t:'ขาย',r:'khǎai',m:'to sell'},
+ {t:'ขาว',r:'khǎao',m:'white'},{t:'ขัน',r:'khǎn',m:'bowl; funny'},{t:'ถาม',r:'thǎam',m:'to ask'},
+ {t:'ถัง',r:'thǎng',m:'bucket'},{t:'ถูก',r:'thùuk',m:'cheap; correct',n:['r:dead-finals']},
+ {t:'ผม',r:'phǒm',m:'hair; I (male)',n:['r:hidden-o']},{t:'ผิด',r:'phìt',m:'wrong',n:['r:dead-finals']},
+ {t:'ผัด',r:'phàt',m:'to stir-fry',n:['r:dead-finals']},{t:'ฝน',r:'fǒn',m:'rain',n:['r:hidden-o']},
+ {t:'ฝัน',r:'fǎn',m:'to dream'},{t:'ฉัน',r:'chǎn',m:'I, me'},
+ {t:'สอง',r:'sɔ̌ɔng',m:'two',n:['v:oor']},{t:'ขอ',r:'khɔ̌ɔ',m:'to ask for',n:['v:oor']},
+ {t:'สอน',r:'sɔ̌ɔn',m:'to teach',n:['v:oor']},{t:'หอม',r:'hɔ̌ɔm',m:'fragrant',n:['v:oor']},
+ {t:'นอน',r:'nɔɔn',m:'to sleep',n:['v:oor']},{t:'มอง',r:'mɔɔng',m:'to look at',n:['v:oor']},
+ {t:'ตอน',r:'dtɔɔn',m:'part; when',n:['v:oor']},{t:'ดอก',r:'dɔ̀ɔk',m:'flower',n:['v:oor','r:dead-finals']},
+ {t:'ยอด',r:'yɔ̂ɔt',m:'peak; excellent',n:['v:oor','r:dead-finals','r:low-dead']},
+ {t:'จำ',r:'jam',m:'to remember'},{t:'ดำ',r:'dam',m:'black'},{t:'นำ',r:'nam',m:'to lead'},
+ {t:'เขา',r:'khǎo',m:'he, she',n:['v:ao']},{t:'เอา',r:'ao',m:'to take, to want',n:['v:ao']},
+ {t:'เมา',r:'mao',m:'drunk',n:['v:ao']},
+ {t:'ตัว',r:'dtua',m:'body, self',n:['v:ua']},{t:'หัว',r:'hǔa',m:'head',n:['v:ua']},
+ {t:'วัว',r:'wua',m:'cow',n:['v:ua']},{t:'สวย',r:'sǔay',m:'beautiful',n:['v:ua']},
+ {t:'เสีย',r:'sǐa',m:'to lose; spoiled',n:['v:ia']},{t:'เมีย',r:'mia',m:'wife (informal)',n:['v:ia']},
+ {t:'เขียน',r:'khǐan',m:'to write',n:['v:ia']},
+ {t:'มือ',r:'mʉʉ',m:'hand'},{t:'ถือ',r:'thʉ̌ʉ',m:'to hold'},{t:'ยืน',r:'yʉʉn',m:'to stand'},
+ {t:'ดึก',r:'dʉ̀k',m:'late at night',n:['r:dead-finals']},{t:'นึก',r:'nʉ́k',m:'to think of',n:['r:dead-finals','r:low-dead']},
+ {t:'เสือ',r:'sʉ̌a',m:'tiger',n:['v:uea']},{t:'เมือง',r:'mʉang',m:'city',n:['v:uea']},
+ {t:'เดือน',r:'dʉan',m:'month',n:['v:uea']},
+ {t:'เจอ',r:'jəə',m:'to meet',n:['v:er']},{t:'เดิน',r:'dəən',m:'to walk',n:['v:er']},
+ {t:'เงิน',r:'ngən',m:'money',n:['v:er']},
+ {t:'เกาะ',r:'gɔ̀',m:'island',n:['v:or-']},{t:'เตะ',r:'dtè',m:'to kick',n:['v:e-']},
+ {t:'เด็ก',r:'dèk',m:'child',n:['v:e-','v:taikhu','r:dead-finals']},{t:'แกะ',r:'gàe',m:'sheep',n:['v:ae-']},
+ {t:'คน',r:'khon',m:'person',n:['r:hidden-o']},{t:'คิด',r:'khít',m:'to think',n:['r:dead-finals','r:low-dead']},
+ {t:'คัน',r:'khan',m:'itchy; (classifier for cars)'},{t:'ทาง',r:'thaang',m:'way, path'},
+ {t:'ทาน',r:'thaan',m:'to eat (polite)'},{t:'ทำ',r:'tham',m:'to do, to make'},
+ {t:'พา',r:'phaa',m:'to take someone'},{t:'พูด',r:'phûut',m:'to speak',n:['r:dead-finals','r:low-dead']},
+ {t:'ลม',r:'lom',m:'wind',n:['r:hidden-o']},{t:'ลิง',r:'ling',m:'monkey'},
+ {t:'และ',r:'láe',m:'and',n:['v:ae-','r:low-dead']},{t:'เล็ก',r:'lék',m:'small',n:['v:e-','v:taikhu','r:dead-finals','r:low-dead']},
+ {t:'รัก',r:'rák',m:'to love',n:['r:dead-finals','r:low-dead']},{t:'รถ',r:'rót',m:'car',n:['r:hidden-o','r:dead-finals','r:low-dead']},
+ {t:'รอ',r:'rɔɔ',m:'to wait',n:['v:oor']},{t:'เรา',r:'rao',m:'we',n:['v:ao']},
+ {t:'เรียน',r:'rian',m:'to study',n:['v:ia']},{t:'ชา',r:'chaa',m:'tea'},
+ {t:'ชาม',r:'chaam',m:'bowl'},{t:'ชอบ',r:'chɔ̂ɔp',m:'to like',n:['v:oor','r:dead-finals','r:low-dead']},
+ {t:'ซัก',r:'sák',m:'to wash (clothes)',n:['r:dead-finals','r:low-dead']},{t:'ฟัน',r:'fan',m:'tooth'},{t:'ฟัง',r:'fang',m:'to listen'},
+ {t:'ทอง',r:'thɔɔng',m:'gold',n:['v:oor']},{t:'ของ',r:'khɔ̌ɔng',m:'thing; of',n:['v:oor']},
+ {t:'ลอง',r:'lɔɔng',m:'to try',n:['v:oor']},{t:'ธง',r:'thong',m:'flag',n:['r:hidden-o']},
+ {t:'เธอ',r:'thəə',m:'you; she',n:['v:er']},{t:'ภาษา',r:'phaa-sǎa',m:'language'},
+ {t:'ระฆัง',r:'rá-khang',m:'bell'},{t:'กาแฟ',r:'gaa-fae',m:'coffee'},
+ {t:'แมว',r:'maaeo',m:'cat'},
+ {t:'ไม่',r:'mâi',m:'not'},{t:'ป่า',r:'bpàa',m:'forest'},{t:'ไข่',r:'khài',m:'egg'},
+ {t:'แม่',r:'mâae',m:'mother'},{t:'พ่อ',r:'phɔ̂ɔ',m:'father',n:['v:oor']},
+ {t:'ที่',r:'thîi',m:'at; place'},{t:'ต่อ',r:'dtɔ̀ɔ',m:'to continue',n:['v:oor']},
+ {t:'ไก่',r:'gài',m:'chicken'},
+ {t:'บ้าน',r:'bâan',m:'house'},{t:'น้ำ',r:'náam',m:'water'},{t:'ห้า',r:'hâa',m:'five'},
+ {t:'ส้ม',r:'sôm',m:'orange'},{t:'ได้',r:'dâi',m:'can; to get'},{t:'ไม้',r:'máai',m:'wood'},
+ {t:'ข้าว',r:'khâao',m:'rice'},{t:'ซื้อ',r:'sʉ́ʉ',m:'to buy'},{t:'ช้าง',r:'cháang',m:'elephant'},
+ {t:'พี่',r:'phîi',m:'older brother or sister'},{t:'ร้อน',r:'rɔ́ɔn',m:'hot',n:['v:oor']},
+ {t:'โต๊ะ',r:'dtó',m:'table',n:['v:o-']},{t:'ก๊อก',r:'gɔ́ɔk',m:'tap, faucet',n:['v:oor','r:dead-finals']},
+ {t:'จ๋า',r:'jǎa',m:'(soft call)'},{t:'ตั๋ว',r:'dtǔa',m:'ticket',n:['v:ua']},
+ {t:'หมา',r:'mǎa',m:'dog',n:['r:silent-h']},{t:'หมู',r:'mǔu',m:'pig',n:['r:silent-h']},
+ {t:'หนู',r:'nǔu',m:'mouse; I (child)',n:['r:silent-h']},{t:'ใหม่',r:'mài',m:'new',n:['r:silent-h']},
+ {t:'หนึ่ง',r:'nʉ̀ng',m:'one',n:['r:silent-h']},{t:'ใหญ่',r:'yài',m:'big',n:['r:silent-h']},
+ {t:'หลาย',r:'lǎai',m:'many',n:['r:silent-h']},{t:'หนาว',r:'nǎao',m:'cold',n:['r:silent-h']},
+ {t:'ผู้หญิง',r:'phûu-yǐng',m:'woman',n:['r:silent-h']},{t:'ผู้ชาย',r:'phûu-chaai',m:'man'},
+ {t:'อยู่',r:'yùu',m:'to be at',n:['r:o-leader']},{t:'อยาก',r:'yàak',m:'to want to',n:['r:o-leader','r:dead-finals']},
+ {t:'อย่าง',r:'yàang',m:'kind, way',n:['r:o-leader']},{t:'อย่า',r:'yàa',m:'do not',n:['r:o-leader']},
+ {t:'ปลา',r:'bplaa',m:'fish',n:['r:cluster']},{t:'กลาง',r:'glaang',m:'middle',n:['r:cluster']},
+ {t:'ครับ',r:'khráp',m:'polite word (male)',n:['r:cluster','r:dead-finals','r:low-dead']},{t:'กว่า',r:'gwàa',m:'more than',n:['r:cluster']},
+ {t:'เพราะ',r:'phrɔ́',m:'because',n:['r:cluster','v:or-','r:low-dead']},
+ {t:'สบาย',r:'sà-baai',m:'comfortable, well',n:['r:unwritten-a']},
+ {t:'ตลาด',r:'dtà-làat',m:'market',n:['r:unwritten-a','r:dead-finals']},
+ {t:'ขนม',r:'khà-nǒm',m:'snack, sweet',n:['r:unwritten-a','r:hidden-o']},
+ {t:'สวัสดี',r:'sà-wàt-dii',m:'hello',n:['r:unwritten-a','r:dead-finals']},
+ {t:'ทราย',r:'saai',m:'sand',n:['r:false-cluster']},{t:'จริง',r:'jing',m:'true',n:['r:false-cluster']},
+ {t:'สร้าง',r:'sâang',m:'to build',n:['r:false-cluster']},
+ {t:'อาจารย์',r:'aa-jaan',m:'teacher',n:['v:karan']},{t:'สัตว์',r:'sàt',m:'animal',n:['v:karan','r:dead-finals']},
+ {t:'เบอร์',r:'bəə',m:'number',n:['v:karan','v:er']},
+ {t:'ขอบคุณ',r:'khɔ̀ɔp-khun',m:'thank you',n:['v:oor','r:dead-finals']},
+ {t:'อร่อย',r:'à-rɔ̀i',m:'delicious',n:['v:oor','r:unwritten-a']},
+ {t:'โรงเรียน',r:'roong-rian',m:'school',n:['v:ia']},
+ {t:'เพื่อน',r:'phʉ̂an',m:'friend',n:['v:uea']},
+ {t:'ภาษาไทย',r:'phaa-sǎa-thai',m:'the Thai language'},
+ {t:'ประเทศไทย',r:'bprà-thêet-thai',m:'Thailand',n:['r:cluster','r:dead-finals']}
+];
+
+/* ============================================================
+   ENGINE — ids, storage, spaced repetition, syllable builder
+   ============================================================ */
+function idOf(d){return d.k==='c'?'c:'+d.v : d.k==='v'?'v:'+d.v : d.k==='t'?'t:'+d.v : 'r:'+d.v;}
+const CHAR_ID={};
+Object.keys(CONS).forEach(c=>CHAR_ID[c]='c:'+c);
+Object.keys(VOW).forEach(v=>(VOW[v].chars||[]).forEach(ch=>CHAR_ID[ch]='v:'+v));
+Object.keys(MARKS).forEach(m=>CHAR_ID[MARKS[m].ch]='t:'+m);
+CHAR_ID['ๆ']='r:yamok';
+const FINAL_ROM={k:'k',t:'t',p:'p',ng:'ng',n:'n',m:'m',y:'i',w:'o'};
+const UPPER='ิีึืัุู็';
+const TONE_DIA={mid:'',low:'\u0300',falling:'\u0302',high:'\u0301',rising:'\u030C'};
+
+function deriveTone(cls,dead,longV,mark){
+  if(mark==='ek')  return cls==='low'?'falling':'low';
+  if(mark==='tho') return cls==='low'?'high':'falling';
   if(mark==='tri') return 'high';
   if(mark==='chat')return 'rising';
-  if(cls==='mid')  return dead ? 'low' : 'mid';
-  if(cls==='high') return dead ? 'low' : 'rising';
+  if(cls==='mid')  return dead?'low':'mid';
+  if(cls==='high') return dead?'low':'rising';
   if(!dead) return 'mid';
-  return longV ? 'falling' : 'high';
+  return longV?'falling':'high';
 }
-const TONE_LABEL={mid:'Mid',low:'Low',falling:'Falling',high:'High',rising:'Rising'};
-
-const LESSONS = [
- { title:'Middle class & long –aa',
-   focus:'The 7 everyday mid-class consonants plus the long vowel ◌า. Mid-class + a long (live) vowel and no tone mark = a flat MID tone. You can read real words from minute one.',
-   cons:['ก','จ','ด','ต','บ','ป','อ'], vow:['aa'],
-   teach:{cls:'mid', t:'Mid-class consonant + long vowel, no tone mark → MID tone (flat). Just say it level.'},
-   syll:[{t:'กา',r:'gaa',m:'crow'},{t:'ตา',r:'dtaa',m:'eye / grandfather'},{t:'มา…',r:'',m:''},{t:'ปา',r:'bpaa',m:'to throw'},{t:'อา',r:'aa',m:'aunt/uncle (dad’s side)'},{t:'ดา',r:'daa',m:'(name)'}].filter(s=>s.r) },
- { title:'The short vowel ◌ะ',
-   focus:'A short vowel with no final consonant makes a DEAD syllable. Mid-class + dead = LOW tone.',
-   cons:[], vow:['a-'],
-   teach:{cls:'mid', t:'A short vowel that ends the syllable = a “dead” syllable. Mid-class + dead → LOW tone (drop your pitch).'},
-   syll:[{t:'จะ',r:'jà',m:'will / shall'},{t:'กะ',r:'gà',m:'to estimate'},{t:'ปะ',r:'bpà',m:'to patch / meet'},{t:'ดะ',r:'dà',m:'indiscriminately'}] },
- { title:'Vowels ◌ิ / ◌ี (i / ii)',
-   focus:'Your first short/long pair sitting ABOVE the consonant. Length matters; the dot mark matters.',
-   cons:[], vow:['i-','ii'],
-   teach:{cls:'mid', t:'◌ี is long → live → MID tone. ◌ิ alone is short → dead → LOW tone.'},
-   syll:[{t:'ดี',r:'dii',m:'good'},{t:'ตี',r:'dtii',m:'to hit'},{t:'ปี',r:'bpii',m:'year'},{t:'อิ',r:'ì',m:'(exclamation)'}] },
- { title:'Vowels ◌ุ / ◌ู (u / uu)',
-   focus:'A short/long pair that sits BELOW the consonant.',
-   cons:[], vow:['u-','uu'],
-   teach:{cls:'mid', t:'◌ู long → MID. ◌ุ short, no final → dead → LOW.'},
-   syll:[{t:'ดู',r:'duu',m:'to look / watch'},{t:'ปู',r:'bpuu',m:'crab'},{t:'ตุ',r:'dtù',m:'—'},{t:'อู',r:'uu',m:'(sound)'}] },
- { title:'Live final consonants',
-   focus:'Finals ง น ม ย ว. A syllable ending in one of these sonorants is LIVE (it can hum on). The final’s own class is irrelevant — only the FIRST consonant sets the tone.',
-   cons:[], vow:[],
-   teach:{cls:'mid', t:'Mid-class start + live ending (or long vowel) → MID tone. Read these flat.'},
-   syll:[{t:'กิน',r:'gin',m:'to eat'},{t:'ดิน',r:'din',m:'soil / earth'},{t:'บิน',r:'bin',m:'to fly'},{t:'จาน',r:'jaan',m:'plate'},{t:'ตาม',r:'dtaam',m:'to follow'},{t:'กาว',r:'gaao',m:'glue'}] },
- { title:'Dead final consonants',
-   focus:'Finals that are stops — ก ด บ etc. They cut the syllable dead. Mid-class + dead = LOW tone, even with a long vowel.',
-   cons:[], vow:[],
-   teach:{cls:'mid', t:'Stop ending (k / t / p sound) = dead syllable. Mid-class + dead → LOW tone.'},
-   syll:[{t:'กบ',r:'gòp',m:'frog'},{t:'ตก',r:'dtòk',m:'to fall'},{t:'ดาบ',r:'dàap',m:'sword'},{t:'บาด',r:'bàat',m:'to cut'}] },
- { title:'Tone marks ◌่ and ◌้',
-   focus:'Two written marks. On a mid-class consonant: ◌่ (mái èek) → LOW, ◌้ (mái thoo) → FALLING.',
-   cons:[], vow:[],
-   teach:{cls:'mid', t:'Mid-class: ◌่ forces LOW, ◌้ forces FALLING (start high, swoop down).'},
-   syll:[{t:'ป่า',r:'bpàa',m:'forest'},{t:'บ้า',r:'bâa',m:'crazy'},{t:'ป้า',r:'bpâa',m:'aunt (older)'},{t:'ต่อ',r:'dtàw',m:'to continue / wasp'}] },
- { title:'Tone marks ◌๊ and ◌๋',
-   focus:'The two rarer marks, used mainly on mid-class & low loanwords: ◌๊ (mái dtrii) → HIGH, ◌๋ (mái jàt-ta-waa) → RISING.',
-   cons:[], vow:[],
-   teach:{cls:'mid', t:'Mid-class: ◌๊ → HIGH, ◌๋ → RISING. Common in casual/onomatopoeic words.'},
-   syll:[{t:'ก๊ก',r:'gók',m:'clique / faction'},{t:'จ๊ะ',r:'já',m:'(soft polite particle)'},{t:'ต๋ง',r:'dtǎng',m:'a cut / commission'}] },
- { title:'Vowels เ◌ and แ◌',
-   focus:'Vowels written BEFORE the consonant: เ◌ (ee, like “ay”) and แ◌ (aae, like “a” in cat).',
-   cons:[], vow:['ee','e-','aae','ae-'],
-   teach:{cls:'mid', t:'Written first, but pronounced after the consonant. Long forms → MID on mid-class.'},
-   syll:[{t:'เด',r:'dee',m:'—'},{t:'เก',r:'gee',m:'—'},{t:'แก',r:'gaae',m:'you (informal) / old'},{t:'แต่',r:'dtàae',m:'but'}] },
- { title:'Vowels โ◌ · ไ◌ · ใ◌ · เ◌า',
-   focus:'More “before” vowels and diphthongs. ไ◌ & ใ◌ both = “ai”; เ◌า = “ao”.',
-   cons:[], vow:['oo','o-','ai2','ai1','ao'],
-   teach:{cls:'mid', t:'These diphthongs are live → mid-class reads them MID (unless a tone mark appears).'},
-   syll:[{t:'ไป',r:'bpai',m:'to go'},{t:'โต',r:'dtoo',m:'big / to grow'},{t:'ใจ',r:'jai',m:'heart / mind'},{t:'เอา',r:'ao',m:'to want / take'}] },
- { title:'High class · part 1',
-   focus:'Seven common high-class consonants: ข ฉ ถ ผ ฝ ส ห. New rule set: high-class + live, no mark → RISING; high-class + dead → LOW.',
-   cons:['ข','ฉ','ถ','ผ','ฝ','ส','ห'], vow:[],
-   teach:{cls:'high', t:'HIGH class, no mark: live → RISING (dip then rise, like a question). dead → LOW.'},
-   syll:[{t:'ขา',r:'khǎa',m:'leg'},{t:'สี',r:'sǐi',m:'colour'},{t:'หู',r:'hǔu',m:'ear'},{t:'ผม',r:'phǒm',m:'hair / I (male)'},{t:'ถาม',r:'thǎam',m:'to ask'},{t:'ฝน',r:'fǒn',m:'rain'}] },
- { title:'High class · tone marks',
-   focus:'On high-class consonants: ◌่ → LOW, ◌้ → FALLING. (High class never takes ◌๊ / ◌๋.)',
-   cons:[], vow:[],
-   teach:{cls:'high', t:'HIGH class: ◌่ → LOW, ◌้ → FALLING. Same two marks, but the no-mark default was RISING.'},
-   syll:[{t:'ไข่',r:'khài',m:'egg'},{t:'ส้ม',r:'sôm',m:'orange'},{t:'ห้า',r:'hâa',m:'five'},{t:'ถ้า',r:'thâa',m:'if'}] },
- { title:'High class · the rest',
-   focus:'The remaining high-class letters — mostly in formal & Pali-Sanskrit words: ฐ ศ ษ (and obsolete ฃ).',
-   cons:['ฐ','ศ','ษ','ฃ'], vow:[],
-   teach:{cls:'high', t:'Same high-class tone rules. ศ ษ ส all sound “s”; ฐ sounds “th”.'},
-   syll:[{t:'ศาล',r:'sǎan',m:'court'},{t:'เศษ',r:'sèet',m:'fragment / remainder'}] },
- { title:'Low class · sonorants',
-   focus:'The “hummable” low-class letters ง ญ ณ น ม ย ร ล ว. Low-class + live, no mark → MID tone.',
-   cons:['ง','น','ม','ย','ร','ล','ว','ญ','ณ'], vow:[],
-   teach:{cls:'low', t:'LOW class, live, no mark → MID. (These sonorants never end a syllable “dead”.)'},
-   syll:[{t:'มา',r:'maa',m:'to come'},{t:'นา',r:'naa',m:'rice field'},{t:'งู',r:'nguu',m:'snake'},{t:'ยา',r:'yaa',m:'medicine'},{t:'ลา',r:'laa',m:'donkey / to say bye'}] },
- { title:'Low class · the loud ones',
-   focus:'Aspirated & fricative low-class letters: ค ช ซ ท พ ฟ ฮ (+ rare ฆ ฌ ฑ ฒ ธ ภ ฬ ฅ).',
-   cons:['ค','ช','ซ','ท','พ','ฟ','ฮ','ฆ','ฌ','ฑ','ฒ','ธ','ภ','ฬ','ฅ'], vow:[],
-   teach:{cls:'low', t:'Same low-class rule: live, no mark → MID. Many pair a high-class twin with the same sound but different class — that’s how Thai writes the missing tones.'},
-   syll:[{t:'ชา',r:'chaa',m:'tea'},{t:'พา',r:'phaa',m:'to take (someone)'},{t:'ทำ',r:'tham',m:'to do / make'},{t:'คน',r:'khon',m:'person'}] },
- { title:'Low class · tones (the tricky one)',
-   focus:'Low-class dead syllables split by length: dead+short → HIGH, dead+long → FALLING. Marks: ◌่ → FALLING, ◌้ → HIGH (mirror of the other classes!).',
-   cons:[], vow:[],
-   teach:{cls:'low', t:'LOW class. No mark: dead+short→HIGH, dead+long→FALLING. With marks: ◌่→FALLING, ◌้→HIGH. (Yes, the marks flip vs mid/high class.)'},
-   syll:[{t:'รัก',r:'rák',m:'to love'},{t:'มาก',r:'mâak',m:'much / very'},{t:'ม้า',r:'máa',m:'horse'},{t:'แม่',r:'mâae',m:'mother'},{t:'พ่อ',r:'phâw',m:'father'},{t:'น้ำ',r:'náam',m:'water'}] },
- { title:'The silent ห & อ leaders',
-   focus:'A silent ห (or อ) placed before a sonorant lends it HIGH-class tone rules. This unlocks rising/low tones for ง ญ ณ น ม ย ร ล ว. Plus the four อย words.',
-   cons:[], vow:[],
-   teach:{cls:'high', t:'หม หน หง หย หล หว หร ← the ห is silent and makes the next letter behave HIGH class. อย่า อยู่ อย่าง อยาก ← อ silently makes ย behave mid class.'},
-   syll:[{t:'หมา',r:'mǎa',m:'dog'},{t:'หนู',r:'nǔu',m:'mouse / I (cute)'},{t:'อยู่',r:'yùu',m:'to be (located)'},{t:'อยาก',r:'yàak',m:'to want to'},{t:'ใหญ่',r:'yài',m:'big'}] },
- { title:'Trickier vowels & ◌ำ',
-   focus:'Round out the vowel set: ◌ัว (ua), เ◌ือ (ʉa), เ◌ีย (ia), ◌ือ/◌ึ (ʉʉ/ʉ), เ◌อ (əə), ◌ำ (am).',
-   cons:[], vow:['am','ua','uea','ia','uue','ue-','er','oor','or-'],
-   teach:{t:'These complete the everyday vowel inventory. Tone is decided exactly as before by the first consonant’s class.'},
-   syll:[{t:'ตัว',r:'dtua',m:'body / self / classifier'},{t:'เสือ',r:'sʉ̌a',m:'tiger'},{t:'มือ',r:'mʉʉ',m:'hand'},{t:'เมีย',r:'mia',m:'wife (informal)'},{t:'เธอ',r:'thəə',m:'you / she'}] },
- { title:'Reading whole words',
-   focus:'You now know every letter, vowel and tone rule. Put it together on real high-frequency words & greetings.',
-   cons:[], vow:[],
-   teach:{t:'Sound out left-to-right, find the first consonant for the tone, then apply the vowel & any final. You can read Thai.'},
-   syll:[{t:'สวัสดี',r:'sà-wàt-dii',m:'hello'},{t:'ขอบคุณ',r:'khàwp-khun',m:'thank you'},{t:'อร่อย',r:'à-ràwy',m:'delicious'},{t:'แมว',r:'maaeo',m:'cat'},{t:'น้ำใจ',r:'náam-jai',m:'kindness'},{t:'เรียน',r:'rian',m:'to study'}] },
-];
-const WORD_BANK=[
- {t:'กิน',r:'gin',m:'eat'},{t:'น้ำ',r:'náam',m:'water'},{t:'ข้าว',r:'khâao',m:'rice'},
- {t:'หมา',r:'mǎa',m:'dog'},{t:'แมว',r:'maaeo',m:'cat'},{t:'บ้าน',r:'bâan',m:'house'},
- {t:'รถ',r:'rót',m:'car'},{t:'ดี',r:'dii',m:'good'},{t:'ไม่',r:'mâi',m:'not'},
- {t:'ใช่',r:'châi',m:'yes / correct'},{t:'รัก',r:'rák',m:'love'},{t:'ร้อน',r:'ráwn',m:'hot'},
- {t:'หนาว',r:'nǎao',m:'cold'},{t:'เงิน',r:'ngən',m:'money'},{t:'ตลาด',r:'dtà-làat',m:'market'},
- {t:'โรงเรียน',r:'roong-rian',m:'school'},{t:'เพื่อน',r:'phʉ̂an',m:'friend'},{t:'สวย',r:'sǔay',m:'beautiful'}
-];
-
-const KEY='readthai.v1';
-const todayKey=()=>new Date().toISOString().slice(0,10);
-function daysBetween(a,b){return Math.round((new Date(b)-new Date(a))/86400000);}
-let S = load();
+function applyTone(rom,tone){
+  const d=TONE_DIA[tone]; if(!d) return rom;
+  const i=rom.search(/[aeiouʉə]/); if(i<0) return rom;
+  return rom.slice(0,i+1)+d+rom.slice(i+1);
+}
+function learnedSet(upTo){
+  const s=new Set();
+  for(let i=0;i<upTo && i<DAYS.length;i++){const d=DAYS[i];s.add(idOf(d));if(d.r)s.add('r:'+d.r);}
+  return s;
+}
+function wordReqs(w){
+  const out=new Set(w.n||[]);
+  for(const ch of w.t){ if(CHAR_ID[ch]) out.add(CHAR_ID[ch]); }
+  return [...out];
+}
+function wordsFor(learned){return WORDS.filter(w=>wordReqs(w).every(id=>learned.has(id)));}
+function newWordsAt(dayIdx){
+  const before=wordsFor(learnedSet(dayIdx)).map(w=>w.t);
+  return wordsFor(learnedSet(dayIdx+1)).filter(w=>before.indexOf(w.t)<0);
+}
+/* ---- syllable builder for the drill phase ---- */
+const DRILL_FINALS=['ก','ด','บ','ง','น','ม','ย','ว'];
+/* finals that do not go with a given vowel in normal Thai spelling */
+const BAN_FIN={aa:[],a2:['ว'],ii:['ย','ว'],'i-':['ย'],'u-':['ว'],uu:['ย','ว'],ee:[],aae:[],oo:['ว'],
+ oor:['ว'],ua:['ว'],ia:['ย'],uue:['ย','ว'],'ue-':['ย','ว'],uea:['ย','ว'],er:['ย','ว'],
+ 'e-':['ย'],'ae-':['ย'],hid:['ย','ว']};
+function buildSyll(c,vid,fin,mark,learned){
+  const V=VOW[vid]; let tpl=fin?V.f:V.o;
+  if(!tpl) return null;
+  if(fin&&V.fNeed&&!learned.has(V.fNeed)) return null;
+  if(fin&&(BAN_FIN[vid]||[]).indexOf(fin)>=0) return null;
+  const dead = fin ? (['k','t','p'].indexOf(CONS[fin].f)>=0) : !V.long;
+  /* do not drill a pattern before its rule is taught */
+  if(dead&&fin&&!learned.has('r:dead-finals')) return null;
+  if(dead&&CONS[c].cls==='low'&&!learned.has('r:low-dead')) return null;
+  if(mark){
+    if(dead) return null;                                   /* marks are drilled on live syllables */
+    if((mark==='tri'||mark==='chat')&&CONS[c].cls!=='mid') return null;
+  }
+  let th=tpl.replace('C',c).replace('F',fin||'');
+  if(mark){
+    let i=th.indexOf(c)+1;
+    while(i<th.length&&UPPER.indexOf(th[i])>=0)i++;
+    th=th.slice(0,i)+MARKS[mark].ch+th.slice(i);
+  }
+  const tone = deriveTone(CONS[c].cls,dead,V.long,mark||'');
+  const rom  = applyTone(CONS[c].r+V.rom,tone)+(fin?FINAL_ROM[CONS[fin].f]:'');
+  const why  = CLASS_NAME[CONS[c].cls].toLowerCase()+' · '+(dead?'dead':'live')+' syllable'+
+               (mark?' · '+MARKS[mark].name.split(' · ')[1]:'')+' → '+TONE_LABEL[tone]+' tone';
+  return {t:th,r:rom,tone:tone,why:why};
+}
+function pick(a){return a[Math.random()*a.length|0];}
+function genDrills(n,learned,focus){
+  const cons=Object.keys(CONS).filter(c=>learned.has('c:'+c)&&!CONS[c].rare);
+  const vows=Object.keys(VOW).filter(v=>learned.has('v:'+v)&&!VOW[v].sign&&(VOW[v].o||VOW[v].f));
+  if(learned.has('r:hidden-o')) vows.push('hid');
+  const fins=DRILL_FINALS.filter(c=>learned.has('c:'+c));
+  const marks=Object.keys(MARKS).filter(m=>learned.has('t:'+m));
+  if(!cons.length||!vows.length) return [];
+  const out=[],seen={};let guard=0;
+  while(out.length<n&&guard++<600){
+    let c=pick(cons), v=pick(vows), f=null, mk='';
+    if(focus&&focus.k==='c'&&!CONS[focus.v].rare&&Math.random()<.6) c=focus.v;
+    if(focus&&focus.k==='v'&&VOW[focus.v]&&!VOW[focus.v].sign&&Math.random()<.7) v=focus.v;
+    if(focus&&focus.k==='t'&&marks.length) mk=focus.v;
+    else if(marks.length&&Math.random()<.35) mk=pick(marks);
+    if(c==='อ'&&(v==='oor'||v==='uue')) continue;
+    const V=VOW[v];
+    const wantFinal=V.f&&fins.length&&(!V.o||Math.random()<.5);
+    if(wantFinal) f=pick(fins);
+    if(v==='hid'&&!f) continue;
+    if(f&&f===c) continue;
+    const s=buildSyll(c,v,f,mk,learned);
+    if(!s||seen[s.t]) continue;
+    seen[s.t]=1;out.push(s);
+  }
+  return out;
+}
+/* ---- storage ---- */
+const KEY='readthai.v2';
+const todayKey=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');};
+function daysBetween(a,b){return Math.round((new Date(b+'T00:00')-new Date(a+'T00:00'))/86400000);}
+let S=load();
 function load(){
   try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.cards)return s;}catch(e){}
-  return {name:'', lessonIdx:0, streak:0, lastStudied:null, totalDone:0,
-          cards:{}, learnedCons:[], learnedVow:[], settings:{rate:0.78, voiceURI:''}};
+  return {name:'',dayIdx:0,streak:0,lastStudied:null,lastLesson:null,totalDone:0,onboarded:false,
+          cards:{},settings:{rate:0.75,voiceURI:'',gate:true}};
 }
-function save(){localStorage.setItem(KEY,JSON.stringify(S));}
-let voices=[], thVoice=null;
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+function newCard(){return {ef:2.5,interval:0,reps:0,due:Date.now()};}
+function reviewCard(id,q){
+  const c=S.cards[id]||newCard();
+  if(q<3){c.reps=0;c.interval=0;}
+  else{
+    c.reps++;
+    if(c.reps===1)c.interval=1; else if(c.reps===2)c.interval=4;
+    else c.interval=Math.round(c.interval*c.ef);
+    c.ef=Math.max(1.3,c.ef+(0.1-(5-q)*(0.08+(5-q)*0.02)));
+  }
+  c.due=Date.now()+(q<3?5*60000:c.interval*86400000);
+  S.cards[id]=c;save();
+}
+function dueCards(){const now=Date.now();return Object.keys(S.cards).filter(id=>S.cards[id].due<=now);}
+function cardData(id){
+  const type=id.slice(0,1),val=id.slice(2);
+  if(type==='c'){const d=CONS[val];return{front:val,cls:CLASS[d.cls],back:d.r?'/'+d.r+'/':'(silent carrier)',sub:d.nr,name:d.name,audio:d.name,mn:d.mn,chip:CLASS_NAME[d.cls]};}
+  if(type==='v'){const d=VOW[val];return{front:d.p,cls:'c-neutral',back:d.rom?'/'+d.rom+'/':d.name,sub:(d.sign?'sign · ':(d.long?'long · ':'short · '))+d.name,name:d.name,audio:d.ex,mn:'',chip:d.sign?'sign':(d.long?'long vowel':'short vowel')};}
+  if(type==='t'){const d=MARKS[val];return{front:'◌'+d.ch,cls:'c-neutral',back:d.name.split(' · ')[1],sub:d.name.split(' · ')[0],name:d.name,audio:d.name.split(' · ')[0],mn:'',chip:'tone mark'};}
+  if(type==='w'){const w=WORDS.find(x=>x.t===val)||{t:val,r:'',m:''};return{front:w.t,cls:'c-neutral',back:'/'+w.r+'/',sub:w.m,name:w.t,audio:w.t,mn:'',chip:'word'};}
+  return{front:'?',cls:'c-neutral',back:'',sub:'',name:'',audio:'',mn:'',chip:''};
+}
+/* ---- speech ---- */
+let voices=[],thVoice=null;
 function loadVoices(){
-  voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
-  const th = voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
-  const chosen = th.find(v=>v.voiceURI===S.settings.voiceURI);
-  thVoice = chosen || th[0] || null;
+  voices=window.speechSynthesis?speechSynthesis.getVoices():[];
+  const th=voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
+  thVoice=th.find(v=>v.voiceURI===S.settings.voiceURI)||th[0]||null;
 }
-if(window.speechSynthesis){ loadVoices(); speechSynthesis.onvoiceschanged=loadVoices; }
-let curBtn=null;
-function speak(text, btn){
-  if(!window.speechSynthesis){return;}
+if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
+function speak(text,btn){
+  if(!window.speechSynthesis)return;
   speechSynthesis.cancel();
   const u=new SpeechSynthesisUtterance(text);
-  u.lang='th-TH'; u.rate=S.settings.rate||0.8; u.pitch=1;
-  if(thVoice) u.voice=thVoice;
-  if(btn){curBtn=btn;btn.classList.add('speaking');
-    u.onend=u.onerror=()=>{btn.classList.remove('speaking');};}
+  u.lang='th-TH';u.rate=S.settings.rate||0.75;u.pitch=1;
+  if(thVoice)u.voice=thVoice;
+  if(btn){btn.classList.add('speaking');u.onend=u.onerror=()=>btn.classList.remove('speaking');}
   speechSynthesis.speak(u);
 }
 function speakIcon(){return '<svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>';}
-function newCard(){return {ef:2.5,interval:0,reps:0,due:Date.now()};}
-function reviewCard(id,quality){
-  const c=S.cards[id]||newCard();
-  if(quality<3){c.reps=0;c.interval=0;}
-  else{
-    c.reps++;
-    if(c.reps===1)c.interval=1;
-    else if(c.reps===2)c.interval=4;
-    else c.interval=Math.round(c.interval*c.ef);
-    c.ef=Math.max(1.3,c.ef+(0.1-(5-quality)*(0.08+(5-quality)*0.02)));
-  }
-  c.due=Date.now()+ (quality<3? 5*60000 : c.interval*86400000);
-  S.cards[id]=c; save();
-}
-function dueCards(){
-  const now=Date.now();
-  return Object.keys(S.cards).filter(id=>S.cards[id].due<=now);
-}
-function cardData(id){
-  const type=id[0], val=id.slice(2);
-  if(type==='c'){const d=CONS[val];return{type,front:val,cls:CLASS[d.cls],back:`/${d.r}/`,sub:d.nr,name:d.name,audio:d.name,mn:d.mn};}
-  if(type==='v'){const d=VOW[val];return{type,front:d.p,cls:'c-neutral',back:'/'+d.sound+'/',sub:(d.len==='long'?'long · ':'short · ')+d.name,name:d.name,audio:d.ex,mn:''};}
-  if(type==='s'){const o=JSON.parse(val);return{type,front:o.t,cls:'c-neutral',back:'/'+o.r+'/',sub:o.m?('“'+o.m+'”'):'',name:o.t,audio:o.t,mn:''};}
-}
-let view='home';
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ============================================================
+   VIEWS
+   ============================================================ */
+let view='home',lesson=null;
 function go(v){view=v;render();window.scrollTo({top:0,behavior:'smooth'});}
 function setNav(){document.querySelectorAll('.nav [data-nav]').forEach(b=>b.classList.toggle('on',b.dataset.nav===view||(view==='lesson'&&b.dataset.nav==='home')));}
-function refreshStreak(){
-  const z=S.streak<=0; const b=document.getElementById('streakBadge');
-  b.classList.toggle('zero',z); document.getElementById('streakNum').textContent=S.streak;
-}
+function refreshStreak(){const b=document.getElementById('streakBadge');b.classList.toggle('zero',S.streak<=0);document.getElementById('streakNum').textContent=S.streak;}
 function render(){
-  setNav(); refreshStreak();
+  setNav();refreshStreak();
   const app=document.getElementById('app');
   if(!S.onboarded){app.innerHTML=viewOnboard();return;}
   if(view==='home')app.innerHTML=viewHome();
+  else if(view==='course')app.innerHTML=viewCourse();
   else if(view==='browse')app.innerHTML=viewBrowse();
-  else if(view==='tones')app.innerHTML=viewTones();
+  else if(view==='tones'){app.innerHTML=viewTones();calcUpdate();}
   else if(view==='settings')app.innerHTML=viewSettings();
   else if(view==='lesson')renderLesson();
 }
 function viewOnboard(){
   return `<div class="panel fadein center">
-    <div class="eyebrow">Welcome · ยินดีต้อนรับ</div>
-    <h1 class="title">Learn to read Thai,<br>one day at a time.</h1>
-    <p class="lede" style="margin:10px auto 18px">A daily 5–10 minute lesson. You’ll read real Thai words from day one, build the alphabet by tone class, and lock it in with spaced repetition. Everything saves in this browser — no account.</p>
+    <div class="eyebrow">ยินดีต้อนรับ · welcome</div>
+    <h1 class="title">One Thai letter,<br>every day.</h1>
+    <p class="lede" style="margin:10px auto 18px">${DAYS.length} days. Each day gives you one new letter, one short review of everything you have seen before, and real words to read out loud. Tone marks come at the end, after you know every letter.</p>
     <div style="max-width:320px;margin:0 auto">
-      <label class="muted" style="font-size:14px">What should I call you? (optional)</label>
+      <label class="muted" style="font-size:14px">What should the app call you? (optional)</label>
       <input id="nameIn" type="text" placeholder="your name" style="width:100%;margin:8px 0 16px" />
-      <button class="btn primary block" onclick="finishOnboard()">Start Day 1 →</button>
+      <button class="btn primary block" onclick="finishOnboard()">Start day 1</button>
     </div>
-    <p class="note-small">🔊 Tip: tap any letter to hear it. Audio uses your device’s Thai voice — see Settings if you hear nothing.</p>
+    <p class="note-small">Progress is kept in this browser. No account, no sign-in. Tap 🔊 on any card to hear it.</p>
   </div>`;
 }
-function finishOnboard(){
-  const n=document.getElementById('nameIn').value.trim();
-  S.name=n; S.onboarded=true; save(); go('home');
+function finishOnboard(){S.name=(document.getElementById('nameIn').value||'').trim();S.onboarded=true;save();go('home');}
+
+function itemLabel(d){return d.k==='c'?'New letter':d.k==='v'?(VOW[d.v]&&VOW[d.v].sign?'New sign':'New vowel'):d.k==='t'?'New tone mark':'New rule';}
+function itemGlyph(d){return d.k==='c'?d.v:d.k==='v'?VOW[d.v].p:d.k==='t'?'◌'+MARKS[d.v].ch:'🎵';}
+function itemTitle(d){
+  if(d.k==='c')return CONS[d.v].name+' — '+CONS[d.v].nr;
+  if(d.k==='v')return VOW[d.v].name+(VOW[d.v].rom?' — /'+VOW[d.v].rom+'/':'');
+  if(d.k==='t')return MARKS[d.v].name;
+  return RULES[d.v].t;
 }
-function lessonsCompletedCount(){return Math.min(S.lessonIdx, LESSONS.length);}
+function itemCls(d){return d.k==='c'?CLASS[CONS[d.v].cls]:'c-neutral';}
+function countLetters(){const l=learnedSet(S.dayIdx);let n=0;Object.keys(CONS).forEach(c=>{if(l.has('c:'+c))n++;});return n;}
 function viewHome(){
-  const due=dueCards().length;
-  const idx=Math.min(S.lessonIdx,LESSONS.length-1);
-  const L=LESSONS[idx];
-  const finished = S.lessonIdx>=LESSONS.length;
-  const greeting=S.name?`Hello, ${escapeHtml(S.name)}.`:'Hello.';
-  const consLearned=S.learnedCons.length, vowLearned=S.learnedVow.length;
-  let glyphs='';
-  if(!finished){
-    const items=[...L.cons.map(c=>({g:c,cls:CLASS[CONS[c].cls]})), ...L.vow.map(v=>({g:VOW[v].p,cls:'c-neutral'}))].slice(0,8);
-    glyphs=items.map(i=>`<div class="pg ${i.cls}">${i.g}</div>`).join('');
-  }
-  const lessonCard = finished ? `
-    <div class="panel todaycard fadein">
-      <div class="eyebrow">All ${LESSONS.length} lessons complete 🎉</div>
-      <h2 class="serif" style="font-size:26px;margin:6px 0">Reading practice mode</h2>
-      <p class="muted">You’ve learned the whole script. Keep your reading sharp with mixed review + fresh words.</p>
+  const due=dueCards().length, done=S.dayIdx>=DAYS.length, doneToday=S.lastLesson===todayKey();
+  const learned=learnedSet(S.dayIdx);
+  const readable=wordsFor(learned).length;
+  const greet=S.name?'Hello, '+escapeHtml(S.name)+'.':'Hello.';
+  const stats=`<div class="statgrid fadein">
+    <div class="stat"><div class="n">${S.streak}</div><div class="l">day streak</div></div>
+    <div class="stat"><div class="n">${countLetters()}<span style="font-size:16px;color:var(--ink-soft)">/44</span></div><div class="l">letters known</div></div>
+    <div class="stat"><div class="n">${due}</div><div class="l">cards due</div></div>
+  </div>`;
+  let card;
+  if(done){
+    card=`<div class="panel todaycard fadein">
+      <div class="eyebrow">Course complete · ${DAYS.length} days</div>
+      <h2 style="font-family:Fraunces,serif;font-size:26px;margin:6px 0">Reading practice</h2>
+      <p class="muted">You know all 44 consonants, the vowels and the four tone marks. Practice mode mixes due cards, fresh syllables and real words.</p>
       <div class="menu-row">
-        <button class="btn primary" onclick="startLesson(true)">${due?`Review ${due} cards + read`:'Start a reading set'} →</button>
-        <button class="btn" onclick="go('browse')">Browse alphabet</button>
-      </div>
-    </div>` : `
-    <div class="panel todaycard fadein">
+        <button class="btn primary" onclick="startPractice()">${due?'Review '+due+' cards and read':'Start a reading set'}</button>
+        <button class="btn" onclick="go('browse')">Letter reference</button>
+      </div></div>`;
+  }else if(doneToday&&S.settings.gate){
+    const nxt=DAYS[S.dayIdx];
+    card=`<div class="panel todaycard fadein">
+      <div class="eyebrow">Today is done ✓</div>
+      <h2 style="font-family:Fraunces,serif;font-size:26px;margin:6px 0">Come back tomorrow for day ${S.dayIdx+1}</h2>
+      <p class="muted">Tomorrow: ${escapeHtml(itemLabel(nxt).toLowerCase())} ${escapeHtml(itemGlyph(nxt))} — ${escapeHtml(itemTitle(nxt))}. Daily spacing is what makes the letters stay.</p>
+      <div class="menu-row">
+        ${due?`<button class="btn primary" onclick="startReview()">Review ${due} due cards</button>`:''}
+        <button class="btn" onclick="startPractice()">Extra reading practice</button>
+        <button class="btn ghost sm" onclick="startLesson()">Take day ${S.dayIdx+1} now</button>
+      </div></div>`;
+  }else{
+    const d=DAYS[S.dayIdx];
+    card=`<div class="panel todaycard fadein ${itemCls(d)}">
       <div class="row">
-        <span class="daybadge">DAY ${S.lessonIdx+1}</span>
-        <div style="flex:1;min-width:200px">
-          <div class="eyebrow">Today’s lesson</div>
-          <h2 class="serif" style="font-size:24px;line-height:1.1;margin-top:3px">${L.title}</h2>
+        <span class="daybadge">DAY ${S.dayIdx+1} / ${DAYS.length}</span>
+        <div style="flex:1;min-width:180px">
+          <div class="eyebrow">${itemLabel(d)}</div>
+          <div class="muted" style="font-size:14px">${escapeHtml(PHASE[d.ph])}</div>
         </div>
       </div>
-      <p class="muted" style="margin-top:12px">${L.focus}</p>
-      <div class="preview-glyphs">${glyphs}</div>
-      <div class="menu-row">
-        <button class="btn primary" onclick="startLesson(false)">
-          ${due?`Review ${due} · then learn →`:'Begin lesson →'}
-        </button>
-        ${due?`<button class="btn" onclick="startReviewOnly()">Just review ${due}</button>`:''}
+      <div class="todayglyph">
+        <div class="g ${d.k==='r'?'small':''}">${itemGlyph(d)}</div>
+        <div>
+          <div style="font-size:19px;font-weight:600">${escapeHtml(itemTitle(d))}</div>
+          ${d.k==='c'?`<span class="chip" style="margin-top:8px">${CLASS_NAME[CONS[d.v].cls]}</span>`:''}
+          ${d.r?`<div class="muted" style="font-size:14px;margin-top:8px">Plus one rule: ${escapeHtml(RULES[d.r].t)}</div>`:''}
+        </div>
       </div>
-    </div>`;
-  return `
-  <div class="hero fadein">
-    <div class="eyebrow">${greeting}</div>
-    <h1 class="title">${finished?'Keep reading.':'Ready for today?'}</h1>
-  </div>
-  <div class="statgrid fadein">
-    <div class="stat"><div class="n">${S.streak}</div><div class="l">day streak</div></div>
-    <div class="stat"><div class="n">${consLearned}<span style="font-size:16px;color:var(--ink-soft)">/44</span></div><div class="l">letters</div></div>
-    <div class="stat"><div class="n">${due}</div><div class="l">cards due</div></div>
-  </div>
-  ${lessonCard}
-  ${S.lastStudied===todayKey()&&!finished?`<p class="note-small center">✓ You’ve already studied today — your streak is safe. Feel free to push ahead.</p>`:''}
-  `;
+      <div class="menu-row">
+        <button class="btn primary" onclick="startLesson()">${due?'Review '+due+', then learn':'Start day '+(S.dayIdx+1)}</button>
+        ${due?`<button class="btn" onclick="startReview()">Review only</button>`:''}
+      </div></div>`;
+  }
+  return `<div class="hero fadein"><div class="eyebrow">${greet}</div>
+    <h1 class="title">${done?'Keep reading.':doneToday&&S.settings.gate?'Nice work today.':'Ready for today?'}</h1>
+    <p class="lede">You can read ${readable} of the ${WORDS.length} words in the word bank.</p></div>
+    ${stats}${card}
+    <p class="note-small center"><a href="#" onclick="go('course');return false;">See the full ${DAYS.length}-day plan</a></p>`;
 }
 
-let lesson=null;
-function startLesson(readingMode){
-  const due=dueCards();
-  const L = readingMode? null : LESSONS[Math.min(S.lessonIdx,LESSONS.length-1)];
-  lesson={
-    readingMode, L,
-    phase:'review', i:0, flipped:false,
-    reviewIds: due.slice(0,18),
-    teachQueue: L? buildTeach(L) : [],
-    practiceItems: readingMode? pickReading(8) : (L? L.syll.slice() : []),
-    practiceIdx:0
-  };
-  if(lesson.reviewIds.length===0) lesson.phase = lesson.teachQueue.length? 'teach' : 'practice';
+/* ---------- lesson flow ---------- */
+function startLesson(){
+  const dayIdx=Math.min(S.dayIdx,DAYS.length-1), item=DAYS[dayIdx];
+  const learnedAfter=learnedSet(dayIdx+1);
+  const fresh=newWordsAt(dayIdx), pool=wordsFor(learnedAfter);
+  lesson={mode:'lesson',dayIdx,item,phase:'review',i:0,flipped:false,ok:0,
+    reviewIds:dueCards().slice(0,20),
+    drills:genDrills(6,learnedAfter,item),di:0,
+    words:mixWords(fresh,pool,6),wi:0};
+  if(!lesson.reviewIds.length)lesson.phase='teach';
   go('lesson');
 }
-function startReviewOnly(){
-  const due=dueCards();
-  lesson={readingMode:false,L:null,phase:'review',i:0,flipped:false,
-    reviewIds:due.slice(0,30),teachQueue:[],practiceItems:[],practiceIdx:0,reviewOnly:true};
+function startReview(){
+  lesson={mode:'review',dayIdx:S.dayIdx,item:null,phase:'review',i:0,flipped:false,ok:0,
+    reviewIds:dueCards().slice(0,40),drills:[],di:0,words:[],wi:0};
   go('lesson');
 }
-function buildTeach(L){
-  const q=[];
-  L.cons.forEach(c=>q.push({kind:'cons',val:c}));
-  L.vow.forEach(v=>q.push({kind:'vow',val:v}));
-  q.push({kind:'note'});
-  return q;
+function startPractice(){
+  const learned=learnedSet(S.dayIdx),pool=wordsFor(learned);
+  lesson={mode:'practice',dayIdx:S.dayIdx,item:null,phase:'review',i:0,flipped:false,ok:0,
+    reviewIds:dueCards().slice(0,20),drills:genDrills(6,learned,null),di:0,
+    words:mixWords([],pool,8),wi:0};
+  if(!lesson.reviewIds.length)lesson.phase='drill';
+  go('lesson');
 }
-function pickReading(n){
-  const pool=[...WORD_BANK];
-  LESSONS.slice(0,S.lessonIdx).forEach(L=>L.syll.forEach(s=>pool.push(s)));
-  for(let i=pool.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[pool[i],pool[j]]=[pool[j],pool[i]];}
-  return pool.slice(0,n);
+function mixWords(fresh,pool,n){
+  const out=fresh.slice(0,n);
+  const rest=pool.filter(w=>out.indexOf(w)<0).sort(()=>Math.random()-.5);
+  while(out.length<n&&rest.length)out.push(rest.pop());
+  return out;
 }
+function quitLesson(){go('home');}
 function renderLesson(){
-  const app=document.getElementById('app');
-  let guard=0;
-  while(guard++<6){
-    if(lesson.phase==='review' && lesson.i>=lesson.reviewIds.length){
-      lesson.i=0; lesson.flipped=false;
-      lesson.phase = lesson.reviewOnly ? 'done' : (lesson.teachQueue.length?'teach':'practice'); continue;
-    }
-    if(lesson.phase==='teach' && lesson.i>=lesson.teachQueue.length){ lesson.i=0; lesson.flipped=false; lesson.phase='practice'; continue; }
-    if(lesson.phase==='practice' && lesson.practiceIdx>=lesson.practiceItems.length){ lesson.phase='done'; continue; }
+  const app=document.getElementById('app');let g=0;
+  while(g++<8){
+    if(lesson.phase==='review'&&lesson.i>=lesson.reviewIds.length){
+      lesson.i=0;lesson.flipped=false;
+      lesson.phase=lesson.mode==='review'?'done':(lesson.mode==='practice'?'drill':'teach');continue;}
+    if(lesson.phase==='teach'){break;}
+    if(lesson.phase==='rule'){break;}
+    if(lesson.phase==='drill'&&lesson.di>=lesson.drills.length){lesson.flipped=false;lesson.phase='words';continue;}
+    if(lesson.phase==='words'&&lesson.wi>=lesson.words.length){lesson.phase='done';continue;}
     break;
   }
-  if(lesson.phase==='done' && !lesson.finalized){ lesson.finalized=true; lesson.reviewOnly?finalizeReviewOnly():finalizeLesson(); }
-  if(lesson.phase==='review')   app.innerHTML=phaseReview();
+  if(lesson.phase==='done'&&!lesson.fin){lesson.fin=true;finalize();}
+  if(lesson.phase==='review')app.innerHTML=phaseReview();
   else if(lesson.phase==='teach')app.innerHTML=phaseTeach();
-  else if(lesson.phase==='practice')app.innerHTML=phasePractice();
+  else if(lesson.phase==='rule')app.innerHTML=phaseRule();
+  else if(lesson.phase==='drill')app.innerHTML=phaseDrill();
+  else if(lesson.phase==='words')app.innerHTML=phaseWords();
   else app.innerHTML=phaseDone();
 }
-function lessonHeader(label,pct){
-  const title=lesson.readingMode?'Reading practice':(lesson.L?lesson.L.title:'Review');
+function head(label,pct){
+  const t=lesson.mode==='lesson'?'Day '+(lesson.dayIdx+1):lesson.mode==='review'?'Review':'Practice';
   return `<div class="lesson-head">
-      <button class="back btn ghost sm" onclick="quitLesson()">← exit</button>
-      <div class="serif" style="font-weight:600">${escapeHtml(title)}</div>
-      <div style="width:54px"></div>
-    </div>
+    <button class="back btn ghost sm" onclick="quitLesson()">← exit</button>
+    <div style="font-family:Fraunces,serif;font-weight:600">${t}</div><div style="width:54px"></div></div>
     <div class="progressbar"><i style="width:${pct}%"></i></div>
     <div class="phase-label">${label}</div>`;
 }
-function quitLesson(){go('home');}
 function phaseReview(){
-  const total=lesson.reviewIds.length;
-  const id=lesson.reviewIds[lesson.i];
-  const d=cardData(id);
-  const pct=Math.round((lesson.i/total)*22);
-  return lessonHeader(`Review · ${lesson.i+1} of ${total}`,pct)+flashcardHtml(d,'review');
+  const total=lesson.reviewIds.length,d=cardData(lesson.reviewIds[lesson.i]);
+  return head('Warm-up review · '+(lesson.i+1)+' of '+total,Math.round(lesson.i/total*20))+flashHtml(d);
 }
 function phaseTeach(){
-  const q=lesson.teachQueue, total=q.length;
-  const step=q[lesson.i];
-  const pct=22+Math.round((lesson.i/total)*40);
-  if(step.kind==='note'){
-    const tn=lesson.L.teach; const cls=tn.cls?('teachnote '+(tn.cls==='high'?'high':tn.cls==='low'?'low':'')):'teachnote';
-    return lessonHeader(`New rule`,pct)+`
-      <div class="panel fadein center">
-        <div class="eyebrow">Tone rule</div>
-        <div style="font-size:54px;margin:10px 0">🎵</div>
-        <div class="${cls}" style="text-align:left;max-width:48ch;margin:0 auto">
-          <b>${tn.cls?CLASS_NAME[tn.cls]:'Reading'}</b>${escapeHtml(tn.t)}</div>
-        <button class="btn primary block" style="margin-top:20px" onclick="teachNext()">Got it →</button>
-      </div>`;
+  const it=lesson.item;
+  if(it.k==='r')return phaseRule(true);
+  const d=cardData(idOf(it));
+  return head(itemLabel(it)+' · today',30)+`
+   <div class="panel fadein center ${itemCls(it)}">
+     <span class="chip">${d.chip}</span>
+     <div class="bigglyph glyph-frame" style="margin:14px auto 8px">${d.front}</div>
+     <div class="roman">${escapeHtml(d.back)}</div>
+     <div class="subline">${escapeHtml(d.sub)}</div>
+     ${it.k==='c'?`<div class="muted" style="margin-top:4px">name: <b style="font-size:18px">${d.name}</b></div>`:''}
+     ${d.mn?`<div class="mnemonic">${d.mn}</div>`:''}
+     ${it.k==='t'?markTable(it.v):''}
+     <div class="exrow">${teachExamples(it).map(e=>exHtml(e)).join('')}</div>
+     <div style="display:flex;gap:12px;align-items:center;justify-content:center;margin-top:18px">
+       <button class="audio-btn" onclick="speak('${d.audio}',this)" aria-label="Hear it">${speakIcon()}</button>
+       <button class="btn primary" onclick="afterTeach()">Next</button>
+     </div>
+   </div>`;
+}
+function teachExamples(it){
+  if(it.k==='v')return [{t:VOW[it.v].ex,r:VOW[it.v].rom||VOW[it.v].name,m:''}];
+  if(it.k==='c'){
+    const pool=wordsFor(learnedSet(lesson.dayIdx+1)).filter(w=>w.t.indexOf(it.v)>=0);
+    return pool.slice(0,3).map(w=>({t:w.t,r:w.r,m:w.m}));
   }
-  let d, isNew;
-  if(step.kind==='cons'){d=cardData('c:'+step.val);isNew=!S.learnedCons.includes(step.val);}
-  else{d=cardData('v:'+step.val);isNew=!S.learnedVow.includes(step.val);}
-  return lessonHeader(`New ${step.kind==='cons'?'letter':'vowel'} · ${lesson.i+1}/${total}`,pct)+`
-    <div class="panel fadein center ${d.cls}">
-      ${step.kind==='cons'?`<span class="chip">${CLASS_NAME[CONS[step.val].cls]}</span>`:`<span class="chip c-neutral" style="--cc:var(--neutral)">${VOW[step.val].len} vowel</span>`}
-      <div class="bigglyph glyph-frame" style="margin:14px auto 6px">${d.front}</div>
-      <div class="roman">${d.back}</div>
-      <div class="subline">${escapeHtml(d.sub)}</div>
-      ${step.kind==='cons'?`<div class="muted" style="margin-top:4px">name: <b class="thai" style="font-size:18px">${d.name}</b></div>`:''}
-      ${d.mn?`<div class="mnemonic">${d.mn}</div>`:''}
-      <div class="reveal-row" style="margin-top:18px">
-        <button class="audio-btn" onclick="speak('${d.audio}',this)" aria-label="play">${speakIcon()}</button>
-        <button class="btn primary" onclick="teachNext()">Next →</button>
-      </div>
-    </div>`;
-}
-function teachNext(){
-  const step=lesson.teachQueue[lesson.i];
-  if(step){
-    if(step.kind==='cons'&&!S.learnedCons.includes(step.val)){S.learnedCons.push(step.val);S.cards['c:'+step.val]=S.cards['c:'+step.val]||newCard();}
-    if(step.kind==='vow'&&!S.learnedVow.includes(step.val)){S.learnedVow.push(step.val);S.cards['v:'+step.val]=S.cards['v:'+step.val]||newCard();}
-    save();
+  if(it.k==='t'){
+    const pool=wordsFor(learnedSet(lesson.dayIdx+1)).filter(w=>w.t.indexOf(MARKS[it.v].ch)>=0);
+    return pool.slice(0,3).map(w=>({t:w.t,r:w.r,m:w.m}));
   }
-  lesson.i++; renderLesson();
+  return [];
 }
-function phasePractice(){
-  const items=lesson.practiceItems, total=items.length;
-  const o=items[lesson.practiceIdx];
-  const id='s:'+JSON.stringify(o);
-  const d={type:'s',front:o.t,cls:'c-neutral',back:'/'+o.r+'/',sub:o.m?('“'+o.m+'”'):'',audio:o.t};
-  const pct=62+Math.round((lesson.practiceIdx/total)*38);
-  return lessonHeader(`Read it · ${lesson.practiceIdx+1} of ${total}`,pct)+flashcardHtml(d,'practice');
+function markTable(m){
+  const g=MARKS[m].gives;
+  return `<table class="ttable" style="margin-top:16px"><tr><th>Class of first consonant</th><th>Tone with ${'◌'+MARKS[m].ch}</th></tr>
+   <tr><td>Middle</td><td class="tone-${g.mid==='—'?'mid':g.mid}">${g.mid==='—'?'not used':TONE_LABEL[g.mid]}</td></tr>
+   <tr><td>High</td><td class="tone-${g.high==='—'?'mid':g.high}">${g.high==='—'?'not used':TONE_LABEL[g.high]}</td></tr>
+   <tr><td>Low</td><td class="tone-${g.low==='—'?'mid':g.low}">${g.low==='—'?'not used':TONE_LABEL[g.low]}</td></tr></table>`;
 }
-function flashcardHtml(d,mode){
-  const flipped=lesson.flipped?'flipped':'';
-  return `<div class="flash ${flipped} fadein" id="flash">
-      <div class="flash-inner">
-        <div class="face front ${d.cls}">
-          <div class="bigglyph glyph-frame">${d.front}</div>
-          <div class="tap-hint">tap card to reveal · 🔊 to hear</div>
-          <button class="audio-btn" style="position:absolute;top:16px;right:16px" onclick="event.stopPropagation();speak('${d.audio}',this)">${speakIcon()}</button>
-        </div>
-        <div class="face back">
-          <div class="roman">${d.back}</div>
-          ${d.sub?`<div class="meaning">${escapeHtml(d.sub)}</div>`:''}
-          <button class="audio-btn" style="margin-top:16px" onclick="event.stopPropagation();speak('${d.audio}',this)">${speakIcon()}</button>
-        </div>
-      </div>
-    </div>
-    ${lesson.flipped? rateRow(mode) : `<button class="btn primary block" onclick="flipCard()">Show answer</button>`}`;
+function exHtml(e){return `<div class="ex" onclick="speak('${e.t}',null)"><div class="t">${e.t}</div><div class="r">${escapeHtml(e.r)}</div>${e.m?`<div class="r" style="font-style:normal">${escapeHtml(e.m)}</div>`:''}</div>`;}
+function phaseRule(isDay){
+  const rid=isDay?lesson.item.v:lesson.item.r,R=RULES[rid];
+  const cls=R.c==='high'?'high':R.c==='low'?'low':R.c==='gold'?'gold':'';
+  return head('New rule',isDay?30:45)+`
+   <div class="panel fadein center">
+     <div class="eyebrow">Rule</div>
+     <h2 style="font-family:Fraunces,serif;font-size:24px;margin:8px 0 12px">${escapeHtml(R.t)}</h2>
+     <div class="teachnote ${cls}" style="max-width:52ch;margin:0 auto">${R.b}</div>
+     <div class="exrow">${R.ex.map(e=>exHtml(e)).join('')}</div>
+     <button class="btn primary block" style="margin-top:20px" onclick="afterRule()">Got it</button>
+   </div>`;
 }
-function rateRow(mode){
-  return `<div class="rate-row fadein">
-    <button class="btn rate again" onclick="rate(0)">Again<small>&lt;5 min</small></button>
-    <button class="btn rate" onclick="rate(3)">Hard<small>1 day</small></button>
-    <button class="btn rate good" onclick="rate(4)">Good<small>space out</small></button>
-    <button class="btn rate" onclick="rate(5)">Easy<small>longer</small></button>
-  </div>`;
-}
-function flipCard(){lesson.flipped=true;renderLesson();
-  let d;
-  if(lesson.phase==='review') d=cardData(lesson.reviewIds[lesson.i]);
-  else {const o=lesson.practiceItems[lesson.practiceIdx]; d={audio:o.t};}
-  setTimeout(()=>speak(d.audio),250);
-}
-document.addEventListener('click',e=>{
-  if(view!=='lesson')return;
-  const f=e.target.closest('#flash');
-  if(f && !lesson.flipped && !e.target.closest('button')){flipCard();}
-});
-function rate(q){
-  let id;
-  if(lesson.phase==='review'){ id=lesson.reviewIds[lesson.i]; reviewCard(id,q); lesson.flipped=false; lesson.i++; }
-  else { const o=lesson.practiceItems[lesson.practiceIdx]; id='s:'+JSON.stringify(o); reviewCard(id,q); lesson.flipped=false; lesson.practiceIdx++; }
+function afterTeach(){
+  const it=lesson.item,id=idOf(it);
+  if(it.k!=='r'&&!S.cards[id]){S.cards[id]=newCard();save();}
+  if(it.r){lesson.phase='rule';}else{lesson.phase='drill';}
   renderLesson();
 }
-function finalizeLesson(){
-  bumpStreak();
-  S.totalDone++;
-  if(!lesson.readingMode && S.lessonIdx<LESSONS.length) S.lessonIdx++;
-  save();
+function afterRule(){lesson.phase='drill';renderLesson();}
+function phaseDrill(){
+  const n=lesson.drills.length,d=lesson.drills[lesson.di];
+  if(!n){lesson.phase='words';return phaseWords();}
+  const pct=50+Math.round(lesson.di/n*25);
+  return head('Read the syllable · '+(lesson.di+1)+' of '+n,pct)+`
+   <div class="flash ${lesson.flipped?'flipped':''} fadein" id="flash"><div class="flash-inner">
+     <div class="face front"><div class="bigglyph">${d.t}</div>
+       <div class="tap-hint">say it out loud, then tap to check</div>
+       <button class="audio-btn" style="position:absolute;top:16px;right:16px" onclick="event.stopPropagation();speak('${d.t}',this)">${speakIcon()}</button></div>
+     <div class="face back"><div class="roman">${d.r}</div>
+       <div class="tonepill tone-${d.tone}">${TONE_LABEL[d.tone]} — ${TONE_HINT[d.tone]}</div>
+       <div class="why">${escapeHtml(d.why)}</div>
+       <button class="audio-btn" style="margin-top:14px" onclick="event.stopPropagation();speak('${d.t}',this)">${speakIcon()}</button></div>
+   </div></div>
+   ${lesson.flipped?`<div class="rate-row fadein" style="grid-template-columns:1fr 1fr">
+      <button class="btn rate again" onclick="drillNext(0)">Missed it</button>
+      <button class="btn rate good" onclick="drillNext(1)">Got it</button></div>`
+    :`<button class="btn primary block" onclick="flip()">Show the answer</button>`}`;
 }
-function finalizeReviewOnly(){bumpStreak();save();}
+function drillNext(ok){if(ok)lesson.ok++;lesson.di++;lesson.flipped=false;renderLesson();}
+function phaseWords(){
+  const n=lesson.words.length;
+  if(!n){lesson.phase='done';return phaseDone();}
+  const w=lesson.words[lesson.wi];
+  const d={front:w.t,back:'/'+w.r+'/',sub:w.m,audio:w.t,cls:'c-neutral'};
+  return head('Read the word · '+(lesson.wi+1)+' of '+n,75+Math.round(lesson.wi/n*25))+flashHtml(d);
+}
+function flashHtml(d){
+  return `<div class="flash ${lesson.flipped?'flipped':''} fadein" id="flash"><div class="flash-inner">
+    <div class="face front ${d.cls||''}"><div class="bigglyph ${d.cls?'glyph-frame':''}">${d.front}</div>
+      <div class="tap-hint">tap the card to check · 🔊 to hear</div>
+      <button class="audio-btn" style="position:absolute;top:16px;right:16px" onclick="event.stopPropagation();speak('${d.audio}',this)">${speakIcon()}</button></div>
+    <div class="face back"><div class="roman">${escapeHtml(d.back)}</div>
+      ${d.sub?`<div class="meaning">${escapeHtml(d.sub)}</div>`:''}
+      ${d.mn?`<div class="mnemonic">${d.mn}</div>`:''}
+      <button class="audio-btn" style="margin-top:16px" onclick="event.stopPropagation();speak('${d.audio}',this)">${speakIcon()}</button></div>
+  </div></div>
+  ${lesson.flipped?rateRow():`<button class="btn primary block" onclick="flip()">Show the answer</button>`}`;
+}
+function rateRow(){
+  return `<div class="rate-row fadein">
+    <button class="btn rate again" onclick="rate(0)">Again<small>5 min</small></button>
+    <button class="btn rate" onclick="rate(3)">Hard<small>1 day</small></button>
+    <button class="btn rate good" onclick="rate(4)">Good<small>space out</small></button>
+    <button class="btn rate" onclick="rate(5)">Easy<small>longer</small></button></div>`;
+}
+function flip(){
+  lesson.flipped=true;renderLesson();
+  let a='';
+  if(lesson.phase==='review')a=cardData(lesson.reviewIds[lesson.i]).audio;
+  else if(lesson.phase==='drill')a=lesson.drills[lesson.di].t;
+  else if(lesson.phase==='words')a=lesson.words[lesson.wi].t;
+  if(a)setTimeout(()=>speak(a),250);
+}
+function rate(q){
+  if(lesson.phase==='review'){reviewCard(lesson.reviewIds[lesson.i],q);lesson.i++;}
+  else{const w=lesson.words[lesson.wi];reviewCard('w:'+w.t,q);lesson.wi++;}
+  if(q>=4)lesson.ok++;
+  lesson.flipped=false;renderLesson();
+}
+document.addEventListener('click',e=>{
+  if(view!=='lesson'||!lesson)return;
+  const f=e.target.closest('#flash');
+  if(f&&!lesson.flipped&&!e.target.closest('button'))flip();
+});
+document.addEventListener('keydown',e=>{
+  if(view!=='lesson'||!lesson)return;
+  if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!lesson.flipped)flip();return;}
+  if(!lesson.flipped)return;
+  if(lesson.phase==='drill'){if(e.key==='1')drillNext(0);if(e.key==='2')drillNext(1);return;}
+  const map={'1':0,'2':3,'3':4,'4':5};
+  if(map[e.key]!==undefined)rate(map[e.key]);
+});
 function bumpStreak(){
   const t=todayKey();
   if(S.lastStudied===t)return;
-  if(S.lastStudied && daysBetween(S.lastStudied,t)===1) S.streak++;
-  else S.streak=1;
+  S.streak=(S.lastStudied&&daysBetween(S.lastStudied,t)===1)?S.streak+1:1;
   S.lastStudied=t;
 }
+function finalize(){
+  bumpStreak();
+  if(lesson.mode==='lesson'){
+    if(S.dayIdx===lesson.dayIdx&&S.dayIdx<DAYS.length)S.dayIdx++;
+    S.lastLesson=todayKey();S.totalDone++;
+  }
+  save();
+}
 function phaseDone(){
-  const newWords=lesson.practiceItems.length;
-  const reviewed=lesson.reviewIds.length;
+  const it=lesson.item;
+  const bits=[];
+  if(lesson.reviewIds.length)bits.push(lesson.reviewIds.length+' cards reviewed');
+  if(lesson.drills.length)bits.push(lesson.drills.length+' syllables read');
+  if(lesson.words.length)bits.push(lesson.words.length+' words read');
+  const unlocked=lesson.mode==='lesson'?newWordsAt(lesson.dayIdx):[];
+  const nxt=S.dayIdx<DAYS.length?DAYS[S.dayIdx]:null;
   return `<div class="panel done fadein">
     <div class="confetti">🎉</div>
-    <h1 class="title" style="font-size:32px">Lesson complete!</h1>
-    <p class="lede center" style="margin:8px auto 4px">
-      ${reviewed?`${reviewed} cards reviewed · `:''}${newWords} read${lesson.readingMode?'':' · day '+S.lessonIdx+' done'}.
-    </p>
+    <h1 class="title" style="font-size:32px">${lesson.mode==='lesson'?'Day '+(lesson.dayIdx+1)+' complete':'Session complete'}</h1>
+    <p class="lede center" style="margin:8px auto 4px">${bits.join(' · ')||'New item learned.'}${it&&it.k==='c'?' · '+countLetters()+' of 44 letters known':''}</p>
+    ${unlocked.length?`<p class="muted center" style="font-size:15px">Words you can now read: ${unlocked.slice(0,8).map(w=>w.t).join(' · ')}</p>`:''}
     <div class="streak" style="margin:18px auto;width:max-content"><span class="flame">🔥</span> ${S.streak} day streak</div>
-    <div class="menu-row" style="justify-content:center">
-      <button class="btn primary" onclick="go('home')">Back to home</button>
-      ${S.lessonIdx<LESSONS.length?`<button class="btn" onclick="startLesson(false)">Next lesson →</button>`:''}
+    ${nxt&&lesson.mode==='lesson'?`<div class="teachnote gold" style="max-width:44ch;margin:0 auto;text-align:left"><b>Tomorrow · day ${S.dayIdx+1}</b>${itemLabel(nxt).toLowerCase()} ${escapeHtml(itemGlyph(nxt))} — ${escapeHtml(itemTitle(nxt))}</div>`:''}
+    <div class="menu-row" style="justify-content:center;margin-top:18px">
+      <button class="btn primary" onclick="go('home')">Back to today</button>
+      <button class="btn" onclick="startPractice()">More practice</button>
     </div>
-    <p class="note-small">Come back tomorrow to keep the streak and review at the right moment.</p>
-  </div>`;
+    <p class="note-small">Come back tomorrow. One letter a day, with the review, is the whole method.</p></div>`;
 }
 
-function viewBrowse(){
-  const order=['mid','high','low'];
-  let html=`<div class="hero fadein"><div class="eyebrow">Reference</div><h1 class="title">The 44 consonants</h1>
-    <p class="lede">Grouped by tone class — the grouping that actually decides how a word sounds. Tap any letter to hear its name. A gold dot = you’ve learned it.</p></div>
-    <div class="legend">
-      <span><i class="dot c-mid" style="--cc:var(--mid)"></i>Middle (9)</span>
-      <span><i class="dot c-high" style="--cc:var(--high)"></i>High (11)</span>
-      <span><i class="dot c-low" style="--cc:var(--low)"></i>Low (24)</span>
+/* ---------- course map ---------- */
+function viewCourse(){
+  let html=`<div class="hero fadein"><div class="eyebrow">The plan</div>
+    <h1 class="title">${DAYS.length} days, one item a day</h1>
+    <p class="lede">Every day adds exactly one thing: a letter, a vowel, or one rule. The four tone marks come last, after all 44 letters are known.</p></div>`;
+  let ph=0;
+  DAYS.forEach((d,i)=>{
+    if(d.ph!==ph){ph=d.ph;html+=`<div class="phasehead">Phase ${ph} · ${escapeHtml(PHASE[ph])}</div><div class="daylist">`;}
+    const st=i<S.dayIdx?'done':i===S.dayIdx?'now':'future';
+    html+=`<div class="dayrow ${st}">
+      <span class="n">${i+1}</span>
+      <span class="g ${d.k==='r'?'':''}" style="font-size:${d.k==='r'?'18px':'26px'}">${d.k==='r'?'🎵':itemGlyph(d)}</span>
+      <span class="lbl">${escapeHtml(itemTitle(d))}</span>
+      ${i<S.dayIdx?'<span style="color:var(--gold-deep)">✓</span>':''}
     </div>`;
-  order.forEach(cls=>{
+    if(DAYS[i+1]&&DAYS[i+1].ph!==ph)html+=`</div>`;
+  });
+  html+=`</div><p class="note-small">To move the start point, open Setup and use “Jump to a day”.</p>`;
+  return html;
+}
+/* ---------- letter reference ---------- */
+function viewBrowse(){
+  const l=learnedSet(S.dayIdx);
+  let html=`<div class="hero fadein"><div class="eyebrow">Reference</div><h1 class="title">The 44 consonants</h1>
+    <p class="lede">Grouped by class, because the class of the first consonant decides the tone. A gold dot marks a letter you have studied. Tap any letter to hear its name.</p></div>
+    <div class="legend">
+      <span><i class="dot" style="--cc:var(--mid);background:var(--mid)"></i>Middle · 9</span>
+      <span><i class="dot" style="--cc:var(--high);background:var(--high)"></i>High · 11</span>
+      <span><i class="dot" style="--cc:var(--low);background:var(--low)"></i>Low · 24</span>
+    </div>`;
+  ['mid','high','low'].forEach(cls=>{
     const list=Object.keys(CONS).filter(c=>CONS[c].cls===cls);
-    html+=`<div class="classblock"><h3><i class="dot ${CLASS[cls]}" style="--cc:var(--${cls})"></i>${CLASS_NAME[cls]} · <span class="muted" style="font-weight:400;font-size:15px">${list.length} letters</span></h3><div class="grid">`;
+    html+=`<div class="classblock"><h3><i class="dot" style="background:var(--${cls})"></i>${CLASS_NAME[cls]} · <span class="muted" style="font-weight:400;font-size:15px">${list.length} letters</span></h3><div class="grid">`;
     list.forEach(c=>{
-      const d=CONS[c]; const learned=S.learnedCons.includes(c);
-      html+=`<div class="cell ${CLASS[cls]} ${learned?'learned':''}" style="--cc:var(--${cls})" onclick="speak('${d.name}',this.querySelector('.ab'))">
-        <div class="g">${c}</div><div class="r">${d.r}${d.rare?' ·rare':''}</div>
-        <span class="ab" style="display:none"></span></div>`;
+      const d=CONS[c],k=l.has('c:'+c);
+      html+=`<div class="cell ${CLASS[cls]} ${k?'learned':'locked'}" style="--cc:var(--${cls})" onclick="speak('${d.name}',null)">
+        <div class="g">${c}</div><div class="r">${d.r||'–'}${d.rare?' ·rare':''}</div></div>`;
     });
     html+=`</div></div>`;
   });
-  html+=`<div class="classblock"><h3><i class="dot c-neutral" style="--cc:var(--neutral)"></i>Vowels · <span class="muted" style="font-weight:400;font-size:15px">core set</span></h3><div class="vgrid">`;
-  Object.keys(VOW).forEach(k=>{
-    const d=VOW[k]; const learned=S.learnedVow.includes(k);
-    html+=`<div class="cell c-neutral ${learned?'learned':''}" style="--cc:var(--neutral)" onclick="speak('${d.ex}',null)">
-      <div class="g" style="font-size:28px">${d.p}</div><div class="r">${d.sound} ·${d.len[0]}</div></div>`;
+  html+=`<div class="classblock"><h3><i class="dot" style="background:var(--neutral)"></i>Vowels and signs</h3><div class="vgrid">`;
+  Object.keys(VOW).filter(k=>k!=='hid').forEach(k=>{
+    const d=VOW[k],kn=l.has('v:'+k);
+    html+=`<div class="cell c-neutral ${kn?'learned':'locked'}" style="--cc:var(--neutral)" onclick="speak('${d.ex}',null)">
+      <div class="g" style="font-size:26px">${d.p}</div><div class="r">${d.rom||d.name.split(' ')[0]}${d.sign?'':' ·'+(d.long?'l':'s')}</div></div>`;
+  });
+  html+=`</div></div><div class="classblock"><h3><i class="dot" style="background:var(--gold)"></i>Tone marks</h3><div class="vgrid">`;
+  Object.keys(MARKS).forEach(m=>{
+    const kn=l.has('t:'+m);
+    html+=`<div class="cell c-neutral ${kn?'learned':'locked'}" style="--cc:var(--gold)" onclick="speak('${MARKS[m].name.split(' · ')[0]}',null)">
+      <div class="g" style="font-size:26px">◌${MARKS[m].ch}</div><div class="r">${MARKS[m].name.split(' · ')[1]}</div></div>`;
   });
   html+=`</div></div>`;
   return html;
 }
+/* ---------- tone rules ---------- */
 let calc={cls:'mid',dead:false,longV:true,mark:''};
 function viewTones(){
   return `<div class="hero fadein"><div class="eyebrow">The hard part, made simple</div>
     <h1 class="title">Tone rules</h1>
-    <p class="lede">A syllable’s tone comes from three things: the <b>class</b> of the first consonant, whether the syllable is <b>live or dead</b>, and any <b>tone mark</b>. Thai has five tones.</p></div>
+    <p class="lede">Three things give a syllable its tone: the class of the first consonant, live or dead, and the tone mark if there is one.</p></div>
     <div class="panel fadein" style="margin-bottom:18px">
-      <div class="eyebrow">Live vs dead</div>
-      <p style="margin-top:8px"><b>Live</b> = ends in a long vowel or a sonorant (m, n, ng, y, w). It can hum on.<br>
-      <b>Dead</b> = ends in a short vowel (no final) or a stop sound (k, t, p). It’s cut off.</p>
-    </div>
+      <div class="eyebrow">Live or dead</div>
+      <p style="margin-top:8px"><b>Live</b> — the syllable ends in a long vowel or in ง น ม ย ว. The sound can continue.<br>
+      <b>Dead</b> — the syllable ends in a short vowel with no final, or in a k, t or p sound. The sound stops.</p></div>
     <div class="panel fadein" style="margin-bottom:18px;overflow-x:auto">
-      <div class="eyebrow" style="margin-bottom:10px">No-mark default tones</div>
+      <div class="eyebrow" style="margin-bottom:10px">No tone mark</div>
       <table class="ttable">
-        <tr><th>First consonant</th><th>Live syllable</th><th>Dead (short)</th><th>Dead (long)</th></tr>
+        <tr><th>First consonant</th><th>Live</th><th>Dead + short</th><th>Dead + long</th></tr>
         <tr><td>Middle</td><td class="tone-mid">Mid</td><td class="tone-low">Low</td><td class="tone-low">Low</td></tr>
         <tr><td>High</td><td class="tone-rising">Rising</td><td class="tone-low">Low</td><td class="tone-low">Low</td></tr>
         <tr><td>Low</td><td class="tone-mid">Mid</td><td class="tone-high">High</td><td class="tone-falling">Falling</td></tr>
-      </table>
-    </div>
+      </table></div>
     <div class="panel fadein" style="margin-bottom:18px;overflow-x:auto">
       <div class="eyebrow" style="margin-bottom:10px">With a tone mark</div>
       <table class="ttable">
-        <tr><th>First consonant</th><th>◌่ mái èek</th><th>◌้ mái thoo</th><th>◌๊ mái dtrii</th><th>◌๋ jàt-ta-waa</th></tr>
-        <tr><td>Mid</td><td class="tone-low">Low</td><td class="tone-falling">Falling</td><td class="tone-high">High</td><td class="tone-rising">Rising</td></tr>
-        <tr><td>High</td><td class="tone-low">Low</td><td class="tone-falling">Falling</td><td>—</td><td>—</td></tr>
-        <tr><td>Low</td><td class="tone-falling">Falling</td><td class="tone-high">High</td><td>—</td><td>—</td></tr>
+        <tr><th>First consonant</th><th>◌่ mái èek</th><th>◌้ mái thoo</th><th>◌๊ mái dtrii</th><th>◌๋ jàt-dtà-waa</th></tr>
+        <tr><td>Middle</td><td class="tone-low">Low</td><td class="tone-falling">Falling</td><td class="tone-high">High</td><td class="tone-rising">Rising</td></tr>
+        <tr><td>High</td><td class="tone-low">Low</td><td class="tone-falling">Falling</td><td>not used</td><td>not used</td></tr>
+        <tr><td>Low</td><td class="tone-falling">Falling</td><td class="tone-high">High</td><td>not used</td><td>not used</td></tr>
       </table>
-      <p class="note-small">Notice the mirror: on low-class letters the two common marks swap their effect compared with mid/high.</p>
-    </div>
+      <p class="note-small">On low-class letters the two common marks give the opposite result to middle and high class.</p></div>
     <div class="panel fadein">
       <div class="eyebrow">Tone calculator</div>
-      <p class="muted" style="margin:6px 0 4px">Build a syllable and see its tone.</p>
+      <p class="muted" style="margin:6px 0 4px">Build a syllable and read the tone.</p>
       <div class="calc">
-        <div><label>First consonant class</label><div class="seg" data-grp="cls">
-          ${seg('cls','mid','Middle')}${seg('cls','high','High')}${seg('cls','low','Low')}</div></div>
-        <div><label>Syllable type</label><div class="seg" data-grp="dead">
-          ${segBool('dead',false,'Live')}${segBool('dead',true,'Dead')}</div></div>
-        <div><label>Vowel length (matters for dead + low class)</label><div class="seg" data-grp="longV">
-          ${segBool('longV',false,'Short')}${segBool('longV',true,'Long')}</div></div>
-        <div><label>Tone mark</label><div class="seg" data-grp="mark">
-          ${seg('mark','','none')}${seg('mark','ek','◌่')}${seg('mark','tho','◌้')}${seg('mark','tri','◌๊')}${seg('mark','chat','◌๋')}</div></div>
+        <div><label>Class of the first consonant</label><div class="seg">${seg('cls','mid','Middle')}${seg('cls','high','High')}${seg('cls','low','Low')}</div></div>
+        <div><label>Syllable</label><div class="seg">${segB('dead',false,'Live')}${segB('dead',true,'Dead')}</div></div>
+        <div><label>Vowel length</label><div class="seg">${segB('longV',false,'Short')}${segB('longV',true,'Long')}</div></div>
+        <div><label>Tone mark</label><div class="seg">${seg('mark','','none')}${seg('mark','ek','◌่')}${seg('mark','tho','◌้')}${seg('mark','tri','◌๊')}${seg('mark','chat','◌๋')}</div></div>
       </div>
-      <div class="calc-out" id="calcOut"></div>
-    </div>`;
+      <div class="calc-out" id="calcOut"></div></div>`;
 }
-function seg(grp,val,label){return `<button onclick="setCalc('${grp}','${val}')" class="${calc[grp]===val?'on':''}">${label}</button>`;}
-function segBool(grp,val,label){return `<button onclick="setCalc('${grp}',${val})" class="${calc[grp]===val?'on':''}">${label}</button>`;}
-function setCalc(grp,val){calc[grp]=val;render();calcUpdate();}
+function seg(g,v,l){return `<button onclick="setCalc('${g}','${v}')" class="${calc[g]===v?'on':''}">${l}</button>`;}
+function segB(g,v,l){return `<button onclick="setCalc('${g}',${v})" class="${calc[g]===v?'on':''}">${l}</button>`;}
+function setCalc(g,v){calc[g]=v;render();}
 function calcUpdate(){
-  const el=document.getElementById('calcOut'); if(!el)return;
-  const t=deriveTone(calc.cls,calc.dead, calc.longV, calc.mark);
-  el.innerHTML=`<div class="muted" style="font-size:13px">result</div><div class="big tone-${t}">${TONE_LABEL[t]} tone</div>`;
+  const el=document.getElementById('calcOut');if(!el)return;
+  const t=deriveTone(calc.cls,calc.dead,calc.longV,calc.mark);
+  const bad=(calc.mark==='tri'||calc.mark==='chat')&&calc.cls!=='mid';
+  el.innerHTML=bad?`<div class="muted">That mark is not used on ${calc.cls} class letters.</div>`
+    :`<div class="muted" style="font-size:13px">result</div><div class="big tone-${t}">${TONE_LABEL[t]} tone</div>
+      <div class="muted" style="font-size:14px">${TONE_HINT[t]}</div>`;
 }
+/* ---------- setup ---------- */
 function viewSettings(){
   loadVoices();
-  const thVoices=voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
-  const voiceOpts = thVoices.length
-    ? thVoices.map(v=>`<option value="${v.voiceURI}" ${v.voiceURI===S.settings.voiceURI?'selected':''}>${escapeHtml(v.name)}</option>`).join('')
-    : `<option>No Thai voice found on this device</option>`;
-  return `<div class="hero fadein"><div class="eyebrow">Settings</div><h1 class="title">Settings</h1></div>
+  const th=voices.filter(v=>/th(-|_)?TH|thai/i.test(v.lang+v.name));
+  const opts=th.length?th.map(v=>`<option value="${v.voiceURI}" ${v.voiceURI===S.settings.voiceURI?'selected':''}>${escapeHtml(v.name)}</option>`).join('')
+    :`<option>No Thai voice on this device</option>`;
+  return `<div class="hero fadein"><div class="eyebrow">Setup</div><h1 class="title">Setup</h1></div>
   <div class="panel fadein">
-    <div class="set-row"><div><b>Your name</b><div class="muted" style="font-size:14px">shown on the home screen</div></div>
-      <input type="text" id="setName" value="${escapeHtml(S.name||'')}" onchange="S.name=this.value;save()"></div>
-    <div class="set-row"><div><b>Thai voice</b><div class="muted" style="font-size:14px">${thVoices.length?'pick a pronunciation voice':'install a Thai system voice for audio'}</div></div>
-      <select id="setVoice" onchange="S.settings.voiceURI=this.value;save();loadVoices()">${voiceOpts}</select></div>
-    <div class="set-row"><div><b>Speech speed</b><div class="muted" style="font-size:14px">slower helps when learning</div></div>
+    <div class="set-row"><div><b>Your name</b><div class="muted" style="font-size:14px">shown on the today screen</div></div>
+      <input type="text" value="${escapeHtml(S.name||'')}" onchange="S.name=this.value;save()"></div>
+    <div class="set-row"><div><b>Thai voice</b><div class="muted" style="font-size:14px">${th.length?'select the voice for pronunciation':'install a Thai system voice to get audio'}</div></div>
+      <select onchange="S.settings.voiceURI=this.value;save();loadVoices()">${opts}</select></div>
+    <div class="set-row"><div><b>Speech speed</b><div class="muted" style="font-size:14px">slow is better while you learn</div></div>
       <input type="range" min="0.5" max="1.2" step="0.05" value="${S.settings.rate}" oninput="S.settings.rate=+this.value;save()"></div>
-    <div class="set-row"><div><b>Test audio</b><div class="muted" style="font-size:14px">สวัสดีครับ</div></div>
+    <div class="set-row"><div><b>Test the audio</b><div class="muted" style="font-size:14px">สวัสดีครับ</div></div>
       <button class="audio-btn" onclick="speak('สวัสดีครับ',this)">${speakIcon()}</button></div>
+    <div class="set-row"><div><b>One lesson a day</b><div class="muted" style="font-size:14px">keeps the spacing that makes letters stay</div></div>
+      <select onchange="S.settings.gate=(this.value==='1');save();go('home')">
+        <option value="1" ${S.settings.gate?'selected':''}>On</option>
+        <option value="0" ${!S.settings.gate?'selected':''}>Off</option></select></div>
   </div>
   <div class="panel fadein" style="margin-top:18px">
-    <div class="set-row"><div><b>Jump to a lesson</b><div class="muted" style="font-size:14px">currently on day ${S.lessonIdx+1} of ${LESSONS.length}</div></div>
-      <select onchange="S.lessonIdx=+this.value;save();go('home')">
-        ${LESSONS.map((L,i)=>`<option value="${i}" ${i===S.lessonIdx?'selected':''}>Day ${i+1} — ${escapeHtml(L.title)}</option>`).join('')}
-      </select></div>
-    <div class="set-row"><div><b class="danger">Reset all progress</b><div class="muted" style="font-size:14px">erases streak, cards & lessons on this browser</div></div>
-      <button class="btn sm danger" onclick="resetAll()">Reset</button></div>
+    <div class="set-row"><div><b>Jump to a day</b><div class="muted" style="font-size:14px">now on day ${Math.min(S.dayIdx+1,DAYS.length)} of ${DAYS.length}</div></div>
+      <select onchange="S.dayIdx=+this.value;save();go('home')">
+        ${DAYS.map((d,i)=>`<option value="${i}" ${i===S.dayIdx?'selected':''}>Day ${i+1} — ${escapeHtml(itemTitle(d)).slice(0,40)}</option>`).join('')}</select></div>
+    <div class="set-row"><div><b>Save a backup</b><div class="muted" style="font-size:14px">a file you can load in another browser</div></div>
+      <button class="btn sm" onclick="exportData()">Export</button></div>
+    <div class="set-row"><div><b>Load a backup</b><div class="muted" style="font-size:14px">replaces the progress in this browser</div></div>
+      <label class="btn sm" style="cursor:pointer">Import<input type="file" accept="application/json" style="display:none" onchange="importData(this)"></label></div>
+    <div class="set-row"><div><b class="danger">Erase progress</b><div class="muted" style="font-size:14px">removes the streak, the cards and the day count</div></div>
+      <button class="btn sm danger" onclick="resetAll()">Erase</button></div>
   </div>
   <div class="panel fadein" style="margin-top:18px">
-    <div class="eyebrow">How audio works</div>
-    <p class="muted" style="margin-top:8px;font-size:14.5px">Pronunciation uses your browser’s built-in Thai text-to-speech (Web Speech API) — no internet call once the voice is on your device. Quality is best on iOS/macOS Safari and on Android/Chrome with a Thai voice installed. On desktop Chrome you may need to add a Thai language pack in your OS settings.</p>
+    <div class="eyebrow">How the course works</div>
+    <p class="muted" style="margin-top:8px;font-size:14.5px">Each day introduces one item and no more. Letters come in class order — middle class (9), then the sonorants that close syllables, then high class (11), then low class (24) — because the class of the first consonant is what decides the tone. Vowels are added between the letters as soon as they let you read more words. The four tone marks come at the end, after all 44 letters.<br><br>
+    Every lesson starts with a review of cards that are due. The scheduler is SM-2: a card you find easy comes back after 1 day, then 4 days, then a multiple of the last gap. A card you miss comes back in 5 minutes. Short daily sessions beat long weekly sessions.</p>
   </div>
   <div class="panel fadein" style="margin-top:18px">
-    <div class="eyebrow">Put this on GitHub Pages</div>
-    <p class="muted" style="margin-top:8px;font-size:14.5px">It’s one file. Create a repo, add this as <b>index.html</b>, then Settings → Pages → deploy from <b>main</b> / root. Done — your progress lives in each visitor’s own browser.</p>
+    <div class="eyebrow">Where the progress is kept</div>
+    <p class="muted" style="margin-top:8px;font-size:14.5px">Progress is written to <b>localStorage</b> in this browser, under the key <code>readthai.v2</code>. localStorage is used instead of a cookie because it holds much more data, it is not sent with every network request, and it does not expire. It is per browser and per device: to move to another device, export a backup file and import it there. Private or incognito windows lose the data when they close.</p>
+  </div>
+  <div class="panel fadein" style="margin-top:18px">
+    <div class="eyebrow">Publish on GitHub Pages</div>
+    <p class="muted" style="margin-top:8px;font-size:14.5px">This app is one file. Put it in a repository as <b>index.html</b>, then open Settings → Pages and deploy from <b>main</b> / root. No build step and no server. Each visitor keeps their own progress in their own browser.</p>
   </div>`;
 }
-function resetAll(){
-  if(confirm('Erase all progress on this device?')){localStorage.removeItem(KEY);S=load();go('home');}
+function exportData(){
+  const blob=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='read-thai-progress.json';document.body.appendChild(a);a.click();a.remove();
 }
-function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-const renderCore=render;
-render=function(){renderCore();if(view==='tones')calcUpdate();};
+function importData(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{try{const o=JSON.parse(r.result);
+    if(o&&o.cards&&typeof o.dayIdx==='number'){S=o;S.settings=S.settings||{rate:.75,voiceURI:'',gate:true};save();go('home');}
+    else alert('That file is not a Read Thai backup.');}catch(e){alert('That file could not be read.');}};
+  r.readAsText(f);
+}
+function resetAll(){if(confirm('Erase all progress in this browser?')){localStorage.removeItem(KEY);S=load();go('home');}}
 render();
-
 </script>
 </body>
 </html>
